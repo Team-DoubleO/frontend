@@ -17,7 +17,7 @@ function Button({
   
   const variantStyles = {
     primary: 'bg-primary text-dark hover:opacity-90',
-    outline: 'bg-transparent border-2 border-primary text-primary hover:bg-primary hover:text-dark'
+    outline: 'bg-transparent border-2 border-primary text-white'
   }
   
   const sizeStyles = {

@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
-import Button from '../components/common/Button'
+import { useNavigate } from 'react-router-dom'
+import Button from '../components/Button'
 import swimmingImg from '../assets/swimming.png'
 import tabletennisImg from '../assets/tabletennis.png'
 import zumbadanceImg from '../assets/zumbadance.png'
 
 function HomePage() {
+  const navigate = useNavigate()
   const [currentIndex, setCurrentIndex] = useState(0)
   
   const images = [
@@ -44,7 +46,7 @@ function HomePage() {
             <Button 
               variant="primary" 
               size="medium"
-              onClick={() => console.log('설문조사 시작')}
+              onClick={() => navigate('/survey/step1')}
             >
               설문조사 시작하기
             </Button>
