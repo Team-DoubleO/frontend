@@ -13,7 +13,7 @@ function Button({
   className = '',
   ...props 
 }: ButtonProps) {
-  const baseStyles = 'font-semibold rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed'
+  const baseStyles = 'inline-flex items-center justify-center font-semibold rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed'
   
   const variantStyles = {
     primary: 'bg-primary text-dark hover:opacity-90',
@@ -22,8 +22,8 @@ function Button({
   
   const sizeStyles = {
     small: 'px-4 py-2 text-sm',
-    medium: 'px-6 py-3 text-base',
-    large: 'px-8 py-4 text-lg'
+    medium: 'px-6 py-2 text-base',
+    large: 'px-8 py-3 text-lg'
   }
   
   return (

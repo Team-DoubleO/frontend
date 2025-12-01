@@ -45,7 +45,7 @@ function HomePage() {
             
             <Button 
               variant="primary" 
-              size="medium"
+              size="large"
               onClick={() => navigate('/survey/step1')}
             >
               설문조사 시작하기

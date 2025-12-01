@@ -26,7 +26,7 @@ function SurveyStep4() {
     if (selectedCategories.length > 0) {
       // TODO: 설문 결과 제출 및 결과 페이지로 이동
       console.log('설문 완료:', selectedCategories)
-      navigate('/survey/result')
+      navigate('/programs')
     }
   }
 
@@ -53,7 +53,7 @@ function SurveyStep4() {
               <button
                 key={category}
                 onClick={() => toggleCategory(category)}
-                className={`py-4 px-3 rounded-lg border-2 transition-all text-sm font-medium ${
+                className={`py-4 px-3 rounded-lg border-2 transition-all ${
                   selectedCategories.includes(category)
                     ? 'border-primary bg-primary/10 text-white'
                     : 'border-gray-700 hover:border-gray-600 text-gray-300'
