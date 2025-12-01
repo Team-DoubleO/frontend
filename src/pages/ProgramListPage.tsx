@@ -90,6 +90,11 @@ function ProgramListPage() {
       setIsTimeModalOpen(true)
     } else {
       setSelectedFilter(label)
+      // 전체를 선택하면 요일/시간대 필터 초기화
+      if (label === '전체') {
+        setSelectedDays([])
+        setSelectedTimes([])
+      }
     }
   }
 
@@ -112,22 +117,55 @@ function ProgramListPage() {
         </div>
 
         {/* Filters */}
-        <div className="flex gap-3 mb-8">
-          {filters.map((filter) => {
-            const Icon = filter.icon
-            return (
-              <Button
-                key={filter.label}
-                variant={selectedFilter === filter.label ? 'primary' : 'outline'}
-                size="medium"
-                onClick={() => handleFilterClick(filter.label)}
-                className="flex items-center gap-2"
-              >
-                <Icon className="w-4 h-4" />
-                {filter.label}
-              </Button>
-            )
-          })}
+        <div className="space-y-4 mb-8">
+          <div className="flex gap-3">
+            {filters.map((filter) => {
+              const Icon = filter.icon
+              const hasAnyFilter = selectedDays.length > 0 || selectedTimes.length > 0
+              
+              let isActive = false
+              if (filter.label === '전체') {
+                isActive = selectedFilter === '전체' && !hasAnyFilter
+              } else if (filter.label === '요일') {
+                isActive = selectedDays.length > 0
+              } else if (filter.label === '시간대') {
+                isActive = selectedTimes.length > 0
+              } else {
+                isActive = selectedFilter === filter.label
+              }
+              
+              return (
+                <Button
+                  key={filter.label}
+                  variant={isActive ? 'primary' : 'outline'}
+                  size="medium"
+                  onClick={() => handleFilterClick(filter.label)}
+                  className="flex items-center gap-2"
+                >
+                  <Icon className="w-4 h-4" />
+                  {filter.label}
+                </Button>
+              )
+            })}
+          </div>
+
+          {/* Selected Filters Display */}
+          {(selectedDays.length > 0 || selectedTimes.length > 0) && (
+            <div className="flex flex-wrap gap-2">
+              {selectedDays.length > 0 && (
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/20 border border-primary rounded-lg text-white text-sm">
+                  <Calendar className="w-4 h-4" />
+                  <span>요일: {selectedDays.join(', ')}</span>
+                </div>
+              )}
+              {selectedTimes.length > 0 && (
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/20 border border-primary rounded-lg text-white text-sm">
+                  <Clock className="w-4 h-4" />
+                  <span>시간: {selectedTimes.join(', ')}</span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Filter Modals */}

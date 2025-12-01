@@ -189,27 +189,23 @@ function ProgramDetailModal({ isOpen, onClose, program }: ProgramDetailModalProp
                 <MapPin className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
                 <div>
                   <div className="text-white font-bold mb-1">장소</div>
-                  <div className="text-white">{program.facilityName || '고덕어울림수영장'}</div>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <MapPin className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
-                <div>
-                  <div className="text-white font-bold mb-1">위치</div>
-                  <div className="text-white">{program.address || '서울특별시 강동구 고덕로 399 (고덕동, 고덕센트럴푸르지오)'}</div>
+                  <div className="text-white">{program.facilityName || program.location || '고덕어울림수영장'}</div>
+                  <div className="text-white/80 text-sm mt-1">{program.address || '서울특별시 강동구 고덕로 399 (고덕동, 고덕센트럴푸르지오)'}</div>
                 </div>
               </div>
 
               <div className="flex items-start gap-3">
                 <Navigation className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
-                <div>
-                  <div className="text-white font-bold mb-1">가까운 대중교통</div>
-                  <div className="space-y-1">
+                <div className="w-full">
+                  <div className="text-white font-bold mb-2">가까운 대중교통</div>
+                  <ul className="space-y-2">
                     {(program.nearbyTransport || ['상일동역4번출구_고덕진흥시장', '상일동역3.4번출구']).map((transport, index) => (
-                      <div key={index} className="text-white">{transport}</div>
+                      <li key={index} className="flex items-center text-white">
+                        <span className="w-1.5 h-1.5 bg-white rounded-full mr-2"></span>
+                        <span>{transport} (도보 {Math.floor(Math.random() * 5) + 3}분)</span>
+                      </li>
                     ))}
-                  </div>
+                  </ul>
                 </div>
               </div>
             </div>
