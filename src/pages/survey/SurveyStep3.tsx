@@ -118,7 +118,7 @@ function SurveyStep3() {
   }
 
   return (
-    <div className="min-h-screen bg-dark py-16">
+    <div className="min-h-screen bg-dark py-4">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <ProgressBar currentStep={3} totalSteps={4} />
 
