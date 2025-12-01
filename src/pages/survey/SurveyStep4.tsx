@@ -17,11 +17,11 @@ function SurveyStep4() {
   const categories: Category[] = [
     {
       name: 'GX/피트니스',
-      subcategories: ['GX', 'GX 기타', '단전', '서킷트레이닝', '스트레칭', '스피닝', '역도', '요가', '점핑피트니스', '줄넘기', '크로스핏', '필라테스', '헬스', '피트니스기타']
+      subcategories: ['GX', 'GX 기타', '단전', '서킷트레이닝', '스트레칭', '스피닝', '역도', '요가', '점핑피트니스', '줄넘기', '크로스핏', '필라테스', '헬스', '피트니스 기타']
     },
     {
       name: '수영/수중운동',
-      subcategories: ['수영', '수영기타', '아쿠아로빅']
+      subcategories: ['수영', '수영 기타', '아쿠아로빅']
     },
     {
       name: '구기 스포츠',
@@ -29,11 +29,11 @@ function SurveyStep4() {
     },
     {
       name: '댄스/체조',
-      subcategories: ['댄스기타', '라인댄스', '리듬체조', '발레', '방송댄스', '밸리댄스', '스포츠댄스', '에어로빅', '줌바댄스']
+      subcategories: ['댄스 기타', '라인댄스', '리듬체조', '발레', '방송댄스', '밸리댄스', '스포츠댄스', '에어로빅', '줌바댄스']
     },
     {
       name: '라켓/골프/타격',
-      subcategories: ['골프', '뉴스포츠기타', '당구', '라켓볼', '배드민턴', '볼링', '스쿼시', '탁구', '테니스', '피클볼']
+      subcategories: ['골프', '뉴스포츠 기타', '당구', '라켓볼', '배드민턴', '볼링', '스쿼시', '탁구', '테니스', '피클볼']
     },
     {
       name: '레저/교육',
@@ -45,7 +45,7 @@ function SurveyStep4() {
     },
     {
       name: '빙상/보드/스케이트',
-      subcategories: ['빙상기타', '스케이트보드', '스피드스케이팅', '인라인스케이트', '피겨스케이팅']
+      subcategories: ['빙상 기타', '스케이트보드', '스피드스케이팅', '인라인스케이트', '피겨스케이팅']
     }
   ]
 
@@ -63,6 +63,35 @@ function SurveyStep4() {
     } else {
       setExpandedCategories([...expandedCategories, categoryName])
     }
+  }
+
+  const selectAllInCategory = (categoryName: string) => {
+    const category = categories.find(c => c.name === categoryName)
+    if (!category) return
+
+    const allSelected = category.subcategories.every(sub => 
+      selectedCategories.includes(sub)
+    )
+
+    if (allSelected) {
+      // 모두 선택되어 있으면 해제
+      setSelectedCategories(
+        selectedCategories.filter(c => !category.subcategories.includes(c))
+      )
+    } else {
+      // 일부만 선택되어 있거나 선택 안되어 있으면 전체 선택
+      const newSelections = [...selectedCategories]
+      category.subcategories.forEach(sub => {
+        if (!newSelections.includes(sub)) {
+          newSelections.push(sub)
+        }
+      })
+      setSelectedCategories(newSelections)
+    }
+  }
+
+  const clearAllSelections = () => {
+    setSelectedCategories([])
   }
 
   const handleSubmit = () => {
@@ -107,6 +136,21 @@ function SurveyStep4() {
                 {/* Subcategories Grid */}
                 {expandedCategories.includes(category.name) && (
                   <div className="p-4 bg-gray-900/30">
+                    {/* Select All Button */}
+                    <div className="mb-3">
+                      <button
+                        onClick={() => selectAllInCategory(category.name)}
+                        className={`py-3 px-3 rounded-lg border-2 transition-all text-sm ${
+                          category.subcategories.every(sub => selectedCategories.includes(sub))
+                            ? 'border-primary bg-primary/10 text-white font-semibold'
+                            : 'border-gray-700 hover:border-gray-600 text-gray-300'
+                        }`}
+                      >
+                        {category.subcategories.every(sub => selectedCategories.includes(sub))
+                          ? '전체 해제'
+                          : '전체 선택'}
+                      </button>
+                    </div>
                     <div className="grid grid-cols-3 gap-2">
                       {category.subcategories.map((subcategory) => (
                         <button
@@ -132,7 +176,17 @@ function SurveyStep4() {
             <div className="lg:sticky lg:top-0 lg:self-start">
               <div className="border-2 border-primary rounded-lg p-4 bg-gray-900">
                 <div className="space-y-3">
-                  <p className="text-primary font-semibold">{selectedCategories.length}개 선택됨</p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-primary font-semibold">{selectedCategories.length}개 선택됨</p>
+                    {selectedCategories.length > 0 && (
+                      <button
+                        onClick={clearAllSelections}
+                        className="px-3 py-1.5 rounded-lg border border-gray-600 text-gray-300 hover:border-primary hover:text-primary transition-all text-sm"
+                      >
+                        전체 초기화
+                      </button>
+                    )}
+                  </div>
                   
                   {/* Selected Items */}
                   {selectedCategories.length > 0 ? (
