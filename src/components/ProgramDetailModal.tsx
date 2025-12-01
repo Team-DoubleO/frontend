@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { X, Calendar, Clock, User, CreditCard, MapPin, Navigation } from 'lucide-react'
+import { X, Calendar, Clock, User, CreditCard, MapPin, Train } from 'lucide-react'
 import Button from './Button'
 
 declare global {
@@ -8,31 +8,82 @@ declare global {
   }
 }
 
+interface TransportData {
+  transportName: string
+  transportTime: string
+}
+
 interface Program {
-  id: number
+  programId: number
+  programName: string
+  programTarget: string
+  weekday: string[]
+  startTime: string
+  price: number
+  reservationUrl: string
   category: string
-  title: string
-  days: string
-  time: string
-  location: string
-  gender?: string
-  startDate?: string
-  endDate?: string
-  price?: string
-  facilityName?: string
-  address?: string
-  nearbyTransport?: string[]
+  subCategory: string
+  facility: string
+  facilityAddress: string
+  TransportData: TransportData[]
 }
 
 interface ProgramDetailModalProps {
   isOpen: boolean
   onClose: () => void
-  program: Program | null
+  programId: number | null
 }
 
-function ProgramDetailModal({ isOpen, onClose, program }: ProgramDetailModalProps) {
+function ProgramDetailModal({ isOpen, onClose, programId }: ProgramDetailModalProps) {
   const [activeTab, setActiveTab] = useState<'프로그램 소개' | '장소 안내'>('프로그램 소개')
+  const [program, setProgram] = useState<Program | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
   const mapRef = useRef<HTMLDivElement>(null)
+
+  // 프로그램 상세 정보 가져오기
+  useEffect(() => {
+    if (!isOpen || !programId) return
+
+    const fetchProgramDetail = async () => {
+      setIsLoading(true)
+      try {
+        // TODO: 실제 API 호출
+        
+        // 임시 데이터 (실제로는 API 응답 사용)
+        setTimeout(() => {
+          setProgram({
+            programId: programId,
+            programName: '밸런스핏아쿠아로빅14A',
+            programTarget: '성인',
+            weekday: ['월', '수', '금'],
+            startTime: '14:00',
+            price: 0,
+            reservationUrl: 'https://search.naver.com/search.naver',
+            category: '수영·수중운동',
+            subCategory: '아쿠아로빅',
+            facility: '고덕어울림수영장',
+            facilityAddress: '서울특별시 강동구 고덕로 399 (고덕동, 고덕센트럴푸르지오)',
+            TransportData: [
+              {
+                transportName: '상일동역4번출구, 고덕전통시장',
+                transportTime: '도보 7분'
+              },
+              {
+                transportName: '상일동역3,4번출구',
+                transportTime: '도보 10분'
+              }
+            ]
+          })
+          setIsLoading(false)
+        }, 500)
+      } catch (error) {
+        console.error('프로그램 상세 조회 실패:', error)
+        setIsLoading(false)
+      }
+    }
+
+    fetchProgramDetail()
+  }, [isOpen, programId])
   
   useEffect(() => {
     if (!isOpen || activeTab !== '장소 안내') return
@@ -70,7 +121,7 @@ function ProgramDetailModal({ isOpen, onClose, program }: ProgramDetailModalProp
     }
   }, [isOpen, activeTab])
   
-  if (!isOpen || !program) return null
+  if (!isOpen) return null
 
   const handleClose = () => {
     setActiveTab('프로그램 소개')
@@ -97,15 +148,29 @@ function ProgramDetailModal({ isOpen, onClose, program }: ProgramDetailModalProp
           <X className="w-6 h-6" />
         </button>
 
-        {/* Category and Title */}
-        <div className="mb-6">
-          <div className="text-sm text-gray-400 mb-2">
-            {program.category}
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center py-20">
+            <div className="relative w-16 h-16 mb-4">
+              <div className="absolute top-0 left-0 w-full h-full border-4 border-gray-700 rounded-full"></div>
+              <div className="absolute top-0 left-0 w-full h-full border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            </div>
+            <p className="text-gray-400 text-lg">프로그램 정보를 불러오는 중...</p>
           </div>
-          <h2 className="text-2xl font-bold text-white">
-            {program.title}
-          </h2>
-        </div>
+        ) : !program ? (
+          <div className="flex flex-col items-center justify-center py-20">
+            <p className="text-gray-400 text-lg">프로그램 정보를 찾을 수 없습니다.</p>
+          </div>
+        ) : (
+          <>
+            {/* Category and Title */}
+            <div className="mb-6">
+              <div className="text-sm text-gray-400 mb-2">
+                {program.category} / {program.subCategory}
+              </div>
+              <h2 className="text-2xl font-bold text-white">
+                {program.programName}
+              </h2>
+            </div>
 
         {/* Tabs */}
         <div className="flex gap-8 mb-6 border-b border-gray-700">
@@ -138,7 +203,7 @@ function ProgramDetailModal({ isOpen, onClose, program }: ProgramDetailModalProp
               <User className="w-5 h-5 text-primary" />
               <div>
                 <span className="text-white font-bold">대상</span>
-                <span className="text-white ml-4">{program.gender || '성인'}</span>
+                <span className="text-white ml-4">{program.programTarget}</span>
               </div>
             </div>
 
@@ -146,7 +211,7 @@ function ProgramDetailModal({ isOpen, onClose, program }: ProgramDetailModalProp
               <Calendar className="w-5 h-5 text-primary" />
               <div>
                 <span className="text-white font-bold">요일</span>
-                <span className="text-white ml-4">{program.days}</span>
+                <span className="text-white ml-4">{program.weekday.join(', ')}</span>
               </div>
             </div>
 
@@ -154,7 +219,7 @@ function ProgramDetailModal({ isOpen, onClose, program }: ProgramDetailModalProp
               <Clock className="w-5 h-5 text-primary" />
               <div>
                 <span className="text-white font-bold">시간</span>
-                <span className="text-white ml-4">{program.time}</span>
+                <span className="text-white ml-4">{program.startTime}</span>
               </div>
             </div>
 
@@ -162,7 +227,7 @@ function ProgramDetailModal({ isOpen, onClose, program }: ProgramDetailModalProp
               <MapPin className="w-5 h-5 text-primary" />
               <div>
                 <span className="text-white font-bold">장소</span>
-                <span className="text-white ml-4">{program.location}</span>
+                <span className="text-white ml-4">{program.facility}</span>
               </div>
             </div>
 
@@ -170,7 +235,7 @@ function ProgramDetailModal({ isOpen, onClose, program }: ProgramDetailModalProp
               <CreditCard className="w-5 h-5 text-primary" />
               <div>
                 <span className="text-white font-bold">가격</span>
-                <span className="text-white ml-4">{program.price || '무료'}</span>
+                <span className="text-white ml-4">{program.price === 0 ? '무료' : `${program.price.toLocaleString()}원`}</span>
               </div>
             </div>
           </div>
@@ -187,22 +252,24 @@ function ProgramDetailModal({ isOpen, onClose, program }: ProgramDetailModalProp
             <div className="space-y-4">
               <div className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
-                <div>
-                  <div className="text-white font-bold mb-1">장소</div>
-                  <div className="text-white">{program.facilityName || program.location || '고덕어울림수영장'}</div>
-                  <div className="text-white/80 text-sm mt-1">{program.address || '서울특별시 강동구 고덕로 399 (고덕동, 고덕센트럴푸르지오)'}</div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-white font-bold">장소</span>
+                    <span className="text-white">{program.facility}</span>
+                  </div>
+                  <div className="text-white">{program.facilityAddress}</div>
                 </div>
               </div>
 
               <div className="flex items-start gap-3">
-                <Navigation className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
+                <Train className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
                 <div className="w-full">
                   <div className="text-white font-bold mb-2">가까운 대중교통</div>
                   <ul className="space-y-2">
-                    {(program.nearbyTransport || ['상일동역4번출구_고덕진흥시장', '상일동역3.4번출구']).map((transport, index) => (
+                    {program.TransportData.map((transport, index) => (
                       <li key={index} className="flex items-center text-white">
                         <span className="w-1.5 h-1.5 bg-white rounded-full mr-2"></span>
-                        <span>{transport} (도보 {Math.floor(Math.random() * 5) + 3}분)</span>
+                        <span>{transport.transportName} ({transport.transportTime})</span>
                       </li>
                     ))}
                   </ul>
@@ -212,16 +279,20 @@ function ProgramDetailModal({ isOpen, onClose, program }: ProgramDetailModalProp
           </div>
         ) : null}
 
-        {/* Action Button */}
-        <div className="flex justify-center">
-          <Button
-            variant="primary"
-            size="large"
-            onClick={handleClose}
-          >
-            예약하기
-          </Button>
-        </div>
+            {/* Action Button */}
+            {program && (
+              <div className="flex justify-center">
+                <Button
+                  variant="primary"
+                  size="large"
+                  onClick={() => window.open(program.reservationUrl, '_blank')}
+                >
+                  예약하기
+                </Button>
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   )

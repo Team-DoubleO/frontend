@@ -8,12 +8,13 @@ import ProgramDetailModal from '../components/ProgramDetailModal'
 import { useSurveyStore } from '../store/surveyStore'
 
 interface Program {
-  id: number
+  programId: number
+  programName: string
+  weekday: string[]
+  startTime: string
   category: string
-  title: string
-  days: string
-  time: string
-  location: string
+  subCategory: string
+  facility: string
 }
 
 function ProgramListPage() {
@@ -25,58 +26,64 @@ function ProgramListPage() {
   const [selectedDays, setSelectedDays] = useState<string[]>(weekday || [])
   const [selectedTimes, setSelectedTimes] = useState<string[]>(startTime || [])
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
-  const [selectedProgram, setSelectedProgram] = useState<Program | null>(null)
+  const [selectedProgramId, setSelectedProgramId] = useState<number | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
   // TODO: 실제로는 설문 결과를 기반으로 API에서 받아온 데이터 사용
   const programs: Program[] = [
     {
-      id: 1,
-      category: '구기',
-      title: '키성장 쑥쑥 초등농구',
-      days: '요일 월, 수',
-      time: '시간 15:00',
-      location: '장소 의왕청소년수련관체육관'
+      programId: 1,
+      programName: '키성장 쑥쑥 초등농구',
+      weekday: ['월', '수'],
+      startTime: '15:00',
+      category: '구기 스포츠',
+      subCategory: '농구',
+      facility: '의왕청소년수련관체육관'
     },
     {
-      id: 2,
-      category: '구기',
-      title: '키성장 쑥쑥 초등농구',
-      days: '요일 월, 수',
-      time: '시간 15:00',
-      location: '장소 의왕청소년수련관체육관'
+      programId: 2,
+      programName: '키성장 쑥쑥 초등농구',
+      weekday: ['월', '수'],
+      startTime: '15:00',
+      category: '구기 스포츠',
+      subCategory: '농구',
+      facility: '의왕청소년수련관체육관'
     },
     {
-      id: 3,
-      category: '구기',
-      title: '키성장 쑥쑥 초등농구',
-      days: '요일 월, 수',
-      time: '시간 15:00',
-      location: '장소 의왕청소년수련관체육관'
+      programId: 3,
+      programName: '키성장 쑥쑥 초등농구',
+      weekday: ['월', '수'],
+      startTime: '15:00',
+      category: '구기 스포츠',
+      subCategory: '농구',
+      facility: '의왕청소년수련관체육관'
     },
     {
-      id: 4,
-      category: '구기',
-      title: '키성장 쑥쑥 초등농구',
-      days: '요일 월, 수',
-      time: '시간 15:00',
-      location: '장소 의왕청소년수련관체육관'
+      programId: 4,
+      programName: '키성장 쑥쑥 초등농구',
+      weekday: ['월', '수'],
+      startTime: '15:00',
+      category: '구기 스포츠',
+      subCategory: '농구',
+      facility: '의왕청소년수련관체육관'
     },
     {
-      id: 5,
-      category: '구기',
-      title: '키성장 쑥쑥 초등농구',
-      days: '요일 월, 수',
-      time: '시간 15:00',
-      location: '장소 의왕청소년수련관체육관'
+      programId: 5,
+      programName: '키성장 쑥쑥 초등농구',
+      weekday: ['월', '수'],
+      startTime: '15:00',
+      category: '구기 스포츠',
+      subCategory: '농구',
+      facility: '의왕청소년수련관체육관'
     },
     {
-      id: 6,
-      category: '구기',
-      title: '키성장 쑥쑥 초등농구',
-      days: '요일 월, 수',
-      time: '시간 15:00',
-      location: '장소 의왕청소년수련관체육관'
+      programId: 6,
+      programName: '키성장 쑥쑥 초등농구',
+      weekday: ['월', '수'],
+      startTime: '15:00',
+      category: '구기 스포츠',
+      subCategory: '농구',
+      facility: '의왕청소년수련관체육관'
     },
   ]
 
@@ -135,8 +142,8 @@ function ProgramListPage() {
     ? programs 
     : programs.filter(p => p.category === selectedFilter)
 
-  const handleProgramClick = (program: Program) => {
-    setSelectedProgram(program)
+  const handleProgramClick = (programId: number) => {
+    setSelectedProgramId(programId)
     setIsDetailModalOpen(true)
   }
 
@@ -217,7 +224,7 @@ function ProgramListPage() {
         <ProgramDetailModal
           isOpen={isDetailModalOpen}
           onClose={() => setIsDetailModalOpen(false)}
-          program={selectedProgram}
+          programId={selectedProgramId}
         />
 
         {/* Programs Grid */}
@@ -233,31 +240,31 @@ function ProgramListPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
             {filteredPrograms.map((program) => (
               <div
-                key={program.id}
-                onClick={() => handleProgramClick(program)}
+                key={program.programId}
+                onClick={() => handleProgramClick(program.programId)}
                 className="bg-gray-800/50 border border-gray-700 rounded-lg p-5 hover:border-primary/50 transition-all cursor-pointer"
               >
                 {/* Category Badge */}
-                <div className="inline-block bg-primary/80 text-dark text-sm font-semibold px-3 py-1 rounded-full mb-3">
-                  {program.category}
+                <div className="inline-block bg-primary/80 text-dark text-sm font-semibold px-3 py-1 rounded-full mb-2">
+                  {program.subCategory}
                 </div>
 
                 {/* Title */}
-                <h3 className="text-white text-lg font-bold mb-3">{program.title}</h3>
+                <h3 className="text-white text-xl font-bold mb-3">{program.programName}</h3>
 
                 {/* Details */}
-                <div className="space-y-2 text-gray-400">
+                <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 flex-shrink-0" />
-                    <span>{program.days}</span>
+                    <Calendar className="w-4 h-4 flex-shrink-0 text-primary" />
+                    <span className='text-white'><span className="font-bold">요일</span> {program.weekday.join(', ')}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 flex-shrink-0" />
-                    <span>{program.time}</span>
+                    <Clock className="w-4 h-4 flex-shrink-0 text-primary" />
+                    <span className='text-white'><span className="font-bold">시간</span> {program.startTime}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 flex-shrink-0" />
-                    <span>{program.location}</span>
+                    <MapPin className="w-4 h-4 flex-shrink-0 text-primary" />
+                    <span className='text-white'><span className="font-bold">장소</span> {program.facility}</span>
                   </div>
                 </div>
               </div>
