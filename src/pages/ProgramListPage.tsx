@@ -4,6 +4,7 @@ import { MapPin, Clock, Calendar, Grid3x3 } from 'lucide-react'
 import Button from '../components/Button'
 import DayFilterModal from '../components/DayFilterModal'
 import TimeFilterModal from '../components/TimeFilterModal'
+import ProgramDetailModal from '../components/ProgramDetailModal'
 
 interface Program {
   id: number
@@ -21,6 +22,8 @@ function ProgramListPage() {
   const [isTimeModalOpen, setIsTimeModalOpen] = useState(false)
   const [selectedDays, setSelectedDays] = useState<string[]>([])
   const [selectedTimes, setSelectedTimes] = useState<string[]>([])
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
+  const [selectedProgram, setSelectedProgram] = useState<Program | null>(null)
 
   // TODO: 실제로는 설문 결과를 기반으로 API에서 받아온 데이터 사용
   const programs: Program[] = [
@@ -94,6 +97,11 @@ function ProgramListPage() {
     ? programs 
     : programs.filter(p => p.category === selectedFilter)
 
+  const handleProgramClick = (program: Program) => {
+    setSelectedProgram(program)
+    setIsDetailModalOpen(true)
+  }
+
   return (
     <div className="min-h-screen bg-dark">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -135,12 +143,18 @@ function ProgramListPage() {
           selectedTimes={selectedTimes}
           onTimesChange={setSelectedTimes}
         />
+        <ProgramDetailModal
+          isOpen={isDetailModalOpen}
+          onClose={() => setIsDetailModalOpen(false)}
+          program={selectedProgram}
+        />
 
         {/* Programs Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
           {filteredPrograms.map((program) => (
             <div
               key={program.id}
+              onClick={() => handleProgramClick(program)}
               className="bg-gray-800/50 border border-gray-700 rounded-lg p-5 hover:border-primary/50 transition-all cursor-pointer"
             >
               {/* Category Badge */}

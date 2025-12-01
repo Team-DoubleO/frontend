@@ -1,24 +1,67 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { ChevronDown, ChevronUp, X } from 'lucide-react'
 import ProgressBar from '../../components/ProgressBar'
 import Button from '../../components/Button'
+
+interface Category {
+  name: string
+  subcategories: string[]
+}
 
 function SurveyStep4() {
   const navigate = useNavigate()
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+  const [expandedCategories, setExpandedCategories] = useState<string[]>([])
 
-  const categories = [
-    '수영', '헬스', '요가', '필라테스',
-    '탁구', '배드민턴', '농구', '축구',
-    '테니스', '댄스', '클라이밍', '태권도',
-    '복싱', '검도', '주짓수', '기타'
+  const categories: Category[] = [
+    {
+      name: 'GX/피트니스',
+      subcategories: ['GX', 'GX 기타', '단전', '서킷트레이닝', '스트레칭', '스피닝', '역도', '요가', '점핑피트니스', '줄넘기', '크로스핏', '필라테스', '헬스', '피트니스기타']
+    },
+    {
+      name: '수영/수중운동',
+      subcategories: ['수영', '수영기타', '아쿠아로빅']
+    },
+    {
+      name: '구기 스포츠',
+      subcategories: ['농구', '배구', '야구', '축구', '티볼']
+    },
+    {
+      name: '댄스/체조',
+      subcategories: ['댄스기타', '라인댄스', '리듬체조', '발레', '방송댄스', '밸리댄스', '스포츠댄스', '에어로빅', '줌바댄스']
+    },
+    {
+      name: '라켓/골프/타격',
+      subcategories: ['골프', '뉴스포츠기타', '당구', '라켓볼', '배드민턴', '볼링', '스쿼시', '탁구', '테니스', '피클볼']
+    },
+    {
+      name: '레저/교육',
+      subcategories: ['교육문화', '사격', '클라이밍']
+    },
+    {
+      name: '무도/격투',
+      subcategories: ['검도', '복싱', '유도', '태권도', '택견', '펜싱', '무도기타']
+    },
+    {
+      name: '빙상/보드/스케이트',
+      subcategories: ['빙상기타', '스케이트보드', '스피드스케이팅', '인라인스케이트', '피겨스케이팅']
+    }
   ]
 
-  const toggleCategory = (category: string) => {
-    if (selectedCategories.includes(category)) {
-      setSelectedCategories(selectedCategories.filter(c => c !== category))
+  const toggleCategory = (subcategory: string) => {
+    if (selectedCategories.includes(subcategory)) {
+      setSelectedCategories(selectedCategories.filter(c => c !== subcategory))
     } else {
-      setSelectedCategories([...selectedCategories, category])
+      setSelectedCategories([...selectedCategories, subcategory])
+    }
+  }
+
+  const toggleExpand = (categoryName: string) => {
+    if (expandedCategories.includes(categoryName)) {
+      setExpandedCategories(expandedCategories.filter(c => c !== categoryName))
+    } else {
+      setExpandedCategories([...expandedCategories, categoryName])
     }
   }
 
@@ -36,36 +79,89 @@ function SurveyStep4() {
         <ProgressBar currentStep={4} totalSteps={4} />
 
         {/* Question */}
-        <div className="space-y-8">
+        <div className="space-y-6">
           <div className="space-y-2">
             <h1 className="text-3xl font-bold text-white">즐겨하는 운동을 선택해 주세요</h1>
             <p className="text-gray-400">관심 있는 운동을 모두 선택하면 이를 반영해서 딱 맞는 체육시설 프로그램을 추천해 드려요.</p>
           </div>
 
-          {/* Selected Count */}
-          <div className="flex items-center space-x-2">
-            <span className="text-primary font-semibold">{selectedCategories.length}개 선택됨</span>
-          </div>
-
-          {/* Categories Grid */}
-          <div className="grid grid-cols-4 gap-3">
+          {/* Two Column Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Left: Categories Accordion */}
+            <div className="lg:col-span-2 space-y-3 lg:max-h-[600px] lg:overflow-y-auto lg:pr-4">
             {categories.map((category) => (
-              <button
-                key={category}
-                onClick={() => toggleCategory(category)}
-                className={`py-4 px-3 rounded-lg border-2 transition-all ${
-                  selectedCategories.includes(category)
-                    ? 'border-primary bg-primary/10 text-white'
-                    : 'border-gray-700 hover:border-gray-600 text-gray-300'
-                }`}
-              >
-                {category}
-              </button>
+              <div key={category.name} className="border-2 border-gray-700 rounded-lg overflow-hidden">
+                {/* Category Header */}
+                <button
+                  onClick={() => toggleExpand(category.name)}
+                  className="w-full flex items-center justify-between px-6 py-4 bg-gray-800/50 hover:bg-gray-800 transition-colors"
+                >
+                  <span className="text-white font-semibold text-lg">{category.name}</span>
+                  {expandedCategories.includes(category.name) ? (
+                    <ChevronUp className="w-5 h-5 text-primary" />
+                  ) : (
+                    <ChevronDown className="w-5 h-5 text-gray-400" />
+                  )}
+                </button>
+
+                {/* Subcategories Grid */}
+                {expandedCategories.includes(category.name) && (
+                  <div className="p-4 bg-gray-900/30">
+                    <div className="grid grid-cols-3 gap-2">
+                      {category.subcategories.map((subcategory) => (
+                        <button
+                          key={subcategory}
+                          onClick={() => toggleCategory(subcategory)}
+                          className={`py-3 px-3 rounded-lg border-2 transition-all text-sm ${
+                            selectedCategories.includes(subcategory)
+                              ? 'border-primary bg-primary/10 text-white font-semibold'
+                              : 'border-gray-700 hover:border-gray-600 text-gray-300'
+                          }`}
+                        >
+                          {subcategory}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             ))}
+            </div>
+
+            {/* Right: Selected Items (Sticky) */}
+            <div className="lg:sticky lg:top-0 lg:self-start">
+              <div className="border-2 border-primary rounded-lg p-4 bg-gray-900">
+                <div className="space-y-3">
+                  <p className="text-primary font-semibold">{selectedCategories.length}개 선택됨</p>
+                  
+                  {/* Selected Items */}
+                  {selectedCategories.length > 0 ? (
+                    <div className="flex flex-wrap gap-2 max-h-[500px] overflow-y-auto pr-2">
+                      {selectedCategories.map((category) => (
+                        <div
+                          key={category}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/20 border border-primary rounded-full text-white text-sm"
+                        >
+                          <span className="leading-none">{category}</span>
+                          <button
+                            onClick={() => toggleCategory(category)}
+                            className="hover:text-primary transition-colors"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-400 text-sm">선택된 운동이 없습니다</p>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Navigation */}
-          <div className="flex justify-between pt-8">
+          <div className="flex justify-between pt-6">
             <Button
               variant="outline"
               size="medium"
