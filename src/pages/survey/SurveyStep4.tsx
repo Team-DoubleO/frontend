@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { ChevronDown, ChevronUp, X } from 'lucide-react'
 import ProgressBar from '../../components/ProgressBar'
 import Button from '../../components/Button'
+import { useSurveyStore } from '../../store/surveyStore'
 
 interface Category {
   name: string
@@ -96,8 +97,14 @@ function SurveyStep4() {
 
   const handleSubmit = () => {
     if (selectedCategories.length > 0) {
-      // TODO: 설문 결과 제출 및 결과 페이지로 이동
-      console.log('설문 완료:', selectedCategories)
+      useSurveyStore.getState().setFavorites(selectedCategories)
+      
+      // 전체 설문 데이터 가져오기
+      const surveyData = useSurveyStore.getState().getSurveyData()
+      console.log('설문 완료:', surveyData)
+      
+      // TODO: API 호출하여 추천 프로그램 받아오기
+      
       navigate('/programs')
     }
   }

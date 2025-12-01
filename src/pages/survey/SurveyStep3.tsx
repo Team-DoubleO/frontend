@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { MapPin, Loader } from 'lucide-react'
 import ProgressBar from '../../components/ProgressBar'
 import Button from '../../components/Button'
+import { useSurveyStore } from '../../store/surveyStore'
 
 declare global {
   interface Window {
@@ -112,7 +113,8 @@ function SurveyStep3() {
   }, [currentPosition])
 
   const handleNext = () => {
-    if (selectedLocation) {
+    if (selectedLocation && currentPosition) {
+      useSurveyStore.getState().setLocation(currentPosition.lat, currentPosition.lng)
       navigate('/survey/step4')
     }
   }

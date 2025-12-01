@@ -1,18 +1,25 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import ProgressBar from '../../components/ProgressBar'
 import Button from '../../components/Button'
+import { useSurveyStore } from '../../store/surveyStore'
 
 function SurveyStep2() {
   const navigate = useNavigate()
-  const [selectedAge, setSelectedAge] = useState<string>('')
+  const { age, setAge } = useSurveyStore()
+  const [selectedAge, setSelectedAge] = useState<string>(age)
 
   const ageGroups = [
     '영유아', '초등학생', '중학생', '고등학생', '성인', '시니어'
   ]
 
+  useEffect(() => {
+    setSelectedAge(age)
+  }, [age])
+
   const handleNext = () => {
     if (selectedAge) {
+      setAge(selectedAge)
       navigate('/survey/step3')
     }
   }

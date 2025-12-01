@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { MapPin, Clock, Calendar, Grid3x3 } from 'lucide-react'
 import Button from '../components/Button'
 import DayFilterModal from '../components/DayFilterModal'
 import TimeFilterModal from '../components/TimeFilterModal'
 import ProgramDetailModal from '../components/ProgramDetailModal'
+import { useSurveyStore } from '../store/surveyStore'
 
 interface Program {
   id: number
@@ -17,13 +18,15 @@ interface Program {
 
 function ProgramListPage() {
   const navigate = useNavigate()
+  const { weekday, startTime, setWeekday, setStartTime, getSurveyData } = useSurveyStore()
   const [selectedFilter, setSelectedFilter] = useState<string>('전체')
   const [isDayModalOpen, setIsDayModalOpen] = useState(false)
   const [isTimeModalOpen, setIsTimeModalOpen] = useState(false)
-  const [selectedDays, setSelectedDays] = useState<string[]>([])
-  const [selectedTimes, setSelectedTimes] = useState<string[]>([])
+  const [selectedDays, setSelectedDays] = useState<string[]>(weekday || [])
+  const [selectedTimes, setSelectedTimes] = useState<string[]>(startTime || [])
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [selectedProgram, setSelectedProgram] = useState<Program | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
 
   // TODO: 실제로는 설문 결과를 기반으로 API에서 받아온 데이터 사용
   const programs: Program[] = [
@@ -82,6 +85,36 @@ function ProgramListPage() {
     { label: '요일', icon: Calendar },
     { label: '시간대', icon: Clock }
   ]
+
+  // 필터 변경 시 API 재요청
+  useEffect(() => {
+    const fetchPrograms = async () => {
+      setIsLoading(true)
+      
+      // Zustand store 업데이트
+      if (selectedDays.length > 0) {
+        setWeekday(selectedDays)
+      } else {
+        setWeekday(undefined)
+      }
+      
+      if (selectedTimes.length > 0) {
+        setStartTime(selectedTimes)
+      } else {
+        setStartTime(undefined)
+      }
+      
+      // 전체 설문 데이터 가져오기
+      const surveyData = getSurveyData()
+      console.log('API 요청 데이터:', surveyData)
+      
+      // TODO: 실제 API 호출
+      
+      setIsLoading(false)
+    }
+    
+    fetchPrograms()
+  }, [selectedDays, selectedTimes])
 
   const handleFilterClick = (label: string) => {
     if (label === '요일') {
@@ -188,39 +221,49 @@ function ProgramListPage() {
         />
 
         {/* Programs Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-          {filteredPrograms.map((program) => (
-            <div
-              key={program.id}
-              onClick={() => handleProgramClick(program)}
-              className="bg-gray-800/50 border border-gray-700 rounded-lg p-5 hover:border-primary/50 transition-all cursor-pointer"
-            >
-              {/* Category Badge */}
-              <div className="inline-block bg-primary/80 text-dark text-sm font-semibold px-3 py-1 rounded-full mb-3">
-                {program.category}
-              </div>
-
-              {/* Title */}
-              <h3 className="text-white text-lg font-bold mb-3">{program.title}</h3>
-
-              {/* Details */}
-              <div className="space-y-2 text-gray-400">
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 flex-shrink-0" />
-                  <span>{program.days}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 flex-shrink-0" />
-                  <span>{program.time}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4 flex-shrink-0" />
-                  <span>{program.location}</span>
-                </div>
-              </div>
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center py-20">
+            <div className="relative w-16 h-16 mb-4">
+              <div className="absolute top-0 left-0 w-full h-full border-4 border-gray-700 rounded-full"></div>
+              <div className="absolute top-0 left-0 w-full h-full border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
             </div>
-          ))}
-        </div>
+            <p className="text-gray-400 text-lg">프로그램을 불러오는 중...</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+            {filteredPrograms.map((program) => (
+              <div
+                key={program.id}
+                onClick={() => handleProgramClick(program)}
+                className="bg-gray-800/50 border border-gray-700 rounded-lg p-5 hover:border-primary/50 transition-all cursor-pointer"
+              >
+                {/* Category Badge */}
+                <div className="inline-block bg-primary/80 text-dark text-sm font-semibold px-3 py-1 rounded-full mb-3">
+                  {program.category}
+                </div>
+
+                {/* Title */}
+                <h3 className="text-white text-lg font-bold mb-3">{program.title}</h3>
+
+                {/* Details */}
+                <div className="space-y-2 text-gray-400">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 flex-shrink-0" />
+                    <span>{program.days}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4 flex-shrink-0" />
+                    <span>{program.time}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4 flex-shrink-0" />
+                    <span>{program.location}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Back Button */}
         <div className="flex justify-center">

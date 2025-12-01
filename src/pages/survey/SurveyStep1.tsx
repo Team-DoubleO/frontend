@@ -1,17 +1,23 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import ProgressBar from '../../components/ProgressBar'
 import Button from '../../components/Button'
+import { useSurveyStore } from '../../store/surveyStore'
 import maleImg from '../../assets/male.png'
 import femaleImg from '../../assets/female.png'
 
 function SurveyStep1() {
   const navigate = useNavigate()
-  const [selectedGender, setSelectedGender] = useState<string>('')
+  const { gender, setGender } = useSurveyStore()
+  const [selectedGender, setSelectedGender] = useState<string>(gender)
+
+  useEffect(() => {
+    setSelectedGender(gender)
+  }, [gender])
 
   const handleNext = () => {
     if (selectedGender) {
-      // TODO: 설문 데이터 저장 (Context 또는 상태 관리)
+      setGender(selectedGender === 'male' ? 'M' : 'F')
       navigate('/survey/step2')
     }
   }
