@@ -80,7 +80,11 @@ function SurveyStep3() {
       const container = mapRef.current
       const options = {
         center: new window.kakao.maps.LatLng(currentPosition.lat, currentPosition.lng),
-        level: 3
+        level: 3,
+        draggable: true,
+        scrollwheel: true,
+        disableDoubleClick: false,
+        disableDoubleClickZoom: false
       }
 
       kakaoMapRef.current = new window.kakao.maps.Map(container, options)
@@ -92,9 +96,15 @@ function SurveyStep3() {
         map: kakaoMapRef.current
       })
 
-      // 지도 클릭 이벤트
+      // 지도 클릭/터치 이벤트
       window.kakao.maps.event.addListener(kakaoMapRef.current, 'click', (mouseEvent: kakao.maps.event.MouseEvent) => {
         const latlng = mouseEvent.latLng
+        
+        // 현재 위치 업데이트
+        setCurrentPosition({
+          lat: latlng.getLat(),
+          lng: latlng.getLng()
+        })
         
         // 마커 위치 변경
         if (markerRef.current) {
@@ -117,26 +127,25 @@ function SurveyStep3() {
   }
 
   return (
-    <div className="min-h-screen bg-dark py-4">
+    <div className="min-h-screen bg-dark py-4 overflow-x-hidden">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <ProgressBar currentStep={3} totalSteps={4} />
 
         {/* Question */}
-        <div className="space-y-8">
+        <div className="space-y-4 sm:space-y-8">
           <div className="space-y-2">
-            <h1 className="text-3xl font-bold text-white">선호 위치를 선택해 주세요</h1>
-            <p className="text-gray-400">입력한 위치를 바탕으로 가까운 체육시설 프로그램을 추천해 드려요.</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-white">선호 위치를 선택해 주세요</h1>
+            <p className="text-sm sm:text-base text-gray-400">입력한 위치를 바탕으로 가까운 체육시설 프로그램을 추천해 드려요.</p>
           </div>
 
           {/* Map */}
-          <div className="relative">
+          <div className="relative -mx-4 sm:mx-0">
             <div 
               ref={mapRef} 
-              className="aspect-video bg-gray-800 rounded-lg overflow-hidden"
-              style={{ minHeight: '400px' }}
+              className="w-[100vw] sm:w-full h-[35vh] max-h-[350px] sm:h-[500px] bg-gray-800 sm:rounded-lg overflow-hidden touch-none"
             >
               {loading && (
-                <div className="absolute inset-0 flex items-center justify-center bg-gray-800">
+                <div className="absolute inset-0 flex items-center justify-center bg-gray-800 z-10">
                   <div className="text-center space-y-4">
                     <Loader className="w-16 h-16 text-primary mx-auto animate-spin" />
                     <p className="text-gray-400">현재 위치를 불러오는 중...</p>
@@ -148,18 +157,18 @@ function SurveyStep3() {
 
           {/* Current Location Display */}
           {address && (
-            <div className="p-4 bg-gray-800 rounded-lg space-y-2">
+            <div className="p-3 sm:p-4 bg-gray-800 rounded-lg space-y-1.5 sm:space-y-2">
               <div className="flex items-center space-x-2">
-                <MapPin className="w-5 h-5 text-primary" />
-                <span className="text-gray-400 text-sm">현재 선택된 위치</span>
+                <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                <span className="text-gray-400 text-xs sm:text-sm">현재 선택된 위치</span>
               </div>
-              <p className="text-white font-medium">{address}</p>
-              <p className="text-gray-500 text-sm">지도를 클릭하여 다른 위치를 선택할 수 있습니다</p>
+              <p className="text-white text-sm sm:text-base font-medium">{address}</p>
+              <p className="text-gray-500 text-xs sm:text-sm">지도를 클릭하여 다른 위치를 선택할 수 있습니다</p>
             </div>
           )}
 
           {/* Navigation */}
-          <div className="flex justify-between pt-8">
+          <div className="flex justify-between pt-4 sm:pt-8 pb-4">
             <Button
               variant="outline"
               size="medium"
