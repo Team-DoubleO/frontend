@@ -5,12 +5,6 @@ import ProgressBar from '../../components/ProgressBar'
 import Button from '../../components/Button'
 import { useSurveyStore } from '../../store/surveyStore'
 
-declare global {
-  interface Window {
-    kakao: any
-  }
-}
-
 function SurveyStep3() {
   const navigate = useNavigate()
   const [selectedLocation, setSelectedLocation] = useState<string>('')
@@ -18,8 +12,25 @@ function SurveyStep3() {
   const [address, setAddress] = useState<string>('')
   const [loading, setLoading] = useState<boolean>(true)
   const mapRef = useRef<HTMLDivElement>(null)
-  const kakaoMapRef = useRef<any>(null)
-  const markerRef = useRef<any>(null)
+  const kakaoMapRef = useRef<kakao.maps.Map | null>(null)
+  const markerRef = useRef<kakao.maps.Marker | null>(null)
+
+  // 좌표로 주소 가져오기
+  const getAddressFromCoords = (lat: number, lng: number) => {
+    if (window.kakao && window.kakao.maps && window.kakao.maps.services) {
+      const geocoder = new window.kakao.maps.services.Geocoder()
+      
+      geocoder.coord2Address(lng, lat, (result, status) => {
+        if (status === window.kakao.maps.services.Status.OK) {
+          const addr = result[0].address.address_name
+          setAddress(addr)
+          setSelectedLocation(addr)
+        } else {
+          setAddress('주소를 가져올 수 없습니다')
+        }
+      })
+    }
+  }
 
   // 현재 위치 가져오기
   useEffect(() => {
@@ -42,24 +53,8 @@ function SurveyStep3() {
         }
       )
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  // 좌표로 주소 가져오기
-  const getAddressFromCoords = (lat: number, lng: number) => {
-    if (window.kakao && window.kakao.maps && window.kakao.maps.services) {
-      const geocoder = new window.kakao.maps.services.Geocoder()
-      
-      geocoder.coord2Address(lng, lat, (result: any, status: any) => {
-        if (status === window.kakao.maps.services.Status.OK) {
-          const addr = result[0].address.address_name
-          setAddress(addr)
-          setSelectedLocation(addr)
-        } else {
-          setAddress('주소를 가져올 수 없습니다')
-        }
-      })
-    }
-  }
 
   // Kakao Maps 스크립트 로드
   useEffect(() => {
@@ -98,11 +93,13 @@ function SurveyStep3() {
       })
 
       // 지도 클릭 이벤트
-      window.kakao.maps.event.addListener(kakaoMapRef.current, 'click', (mouseEvent: any) => {
+      window.kakao.maps.event.addListener(kakaoMapRef.current, 'click', (mouseEvent: kakao.maps.event.MouseEvent) => {
         const latlng = mouseEvent.latLng
         
         // 마커 위치 변경
-        markerRef.current.setPosition(latlng)
+        if (markerRef.current) {
+          markerRef.current.setPosition(latlng)
+        }
         
         // 주소 가져오기
         getAddressFromCoords(latlng.getLat(), latlng.getLng())

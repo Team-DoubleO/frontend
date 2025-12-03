@@ -3,12 +3,6 @@ import { X, Calendar, Clock, User, CreditCard, MapPin, Train } from 'lucide-reac
 import Button from './Button'
 import { fetchProgramDetail } from '../services/api'
 
-declare global {
-  interface Window {
-    kakao: any
-  }
-}
-
 interface TransportData {
   transportName: string
   transportTime: string
@@ -91,42 +85,21 @@ function ProgramDetailModal({ isOpen, onClose, programId }: ProgramDetailModalPr
       // Geocoder로 주소를 좌표로 변환
       const geocoder = new window.kakao.maps.services.Geocoder()
       
-      geocoder.addressSearch(program.facilityAddress, (result: any, status: any) => {
+      geocoder.addressSearch(program.facilityAddress, (result, status) => {
         if (status === window.kakao.maps.services.Status.OK) {
-          const coords = new window.kakao.maps.LatLng(result[0].y, result[0].x)
+          const coords = new window.kakao.maps.LatLng(parseFloat(result[0].y), parseFloat(result[0].x))
           
           const options = {
             center: coords,
             level: 4
           }
 
-          const map = new window.kakao.maps.Map(mapRef.current, options)
+          const map = new window.kakao.maps.Map(mapRef.current!, options)
 
-          const marker = new window.kakao.maps.Marker({
+          new window.kakao.maps.Marker({
             position: coords,
             map: map
           })
-          
-          // 커스텀 오버레이 콘텐츠
-          const overlayContent = document.createElement('div')
-          overlayContent.style.cssText = `
-            padding: 8px 16px;
-            background: #1A1A1A;
-            border-radius: 8px;
-            white-space: nowrap;
-            color: #13EC5B;
-            font-size: 12px;
-            font-weight: 600;
-            transform: translateY(-45px);
-          `
-          overlayContent.textContent = program.facility
-          
-          const customOverlay = new window.kakao.maps.CustomOverlay({
-            position: coords,
-            content: overlayContent,
-            yAnchor: 1
-          })
-          customOverlay.setMap(map)
         } else {
           console.error('주소 검색 실패:', program.facilityAddress)
         }
