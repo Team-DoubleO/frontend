@@ -31,6 +31,27 @@ export interface ProgramResponse {
   }[]
 }
 
+export interface ProgramDetailResponse {
+  status: string
+  message: string
+  data: {
+    programName: string
+    programTarget: string
+    weekday: string[]
+    startTime: string
+    price: number
+    reservationUrl: string
+    category: string
+    subCategory: string
+    facility: string
+    facilityAddress: string
+    transportDatumRaws: {
+      transportName: string
+      transportTime: number
+    }[]
+  }
+}
+
 export const fetchPrograms = async (
   body: ProgramRequest,
   pageSize: number,
@@ -42,6 +63,11 @@ export const fetchPrograms = async (
   }
   
   const { data } = await api.post<ProgramResponse>('/api/v1/programs', body, { params })
+  return data
+}
+
+export const fetchProgramDetail = async (programId: number): Promise<ProgramDetailResponse> => {
+  const { data } = await api.get<ProgramDetailResponse>(`/api/v1/programs/${programId}`)
   return data
 }
 

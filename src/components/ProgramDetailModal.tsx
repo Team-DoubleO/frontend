@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { X, Calendar, Clock, User, CreditCard, MapPin, Train } from 'lucide-react'
 import Button from './Button'
+import { fetchProgramDetail } from '../services/api'
 
 declare global {
   interface Window {
@@ -44,82 +45,106 @@ function ProgramDetailModal({ isOpen, onClose, programId }: ProgramDetailModalPr
   useEffect(() => {
     if (!isOpen || !programId) return
 
-    const fetchProgramDetail = async () => {
+    const loadProgramDetail = async () => {
       setIsLoading(true)
       try {
-        // TODO: 실제 API 호출
+        const response = await fetchProgramDetail(programId)
+        const apiData = response.data
         
-        // 임시 데이터 (실제로는 API 응답 사용)
-        setTimeout(() => {
-          setProgram({
-            programId: programId,
-            programName: '밸런스핏아쿠아로빅14A',
-            programTarget: '성인',
-            weekday: ['월', '수', '금'],
-            startTime: '14:00',
-            price: 0,
-            reservationUrl: 'https://search.naver.com/search.naver',
-            category: '수영·수중운동',
-            subCategory: '아쿠아로빅',
-            facility: '고덕어울림수영장',
-            facilityAddress: '서울특별시 강동구 고덕로 399 (고덕동, 고덕센트럴푸르지오)',
-            TransportData: [
-              {
-                transportName: '상일동역4번출구, 고덕전통시장',
-                transportTime: '도보 7분'
-              },
-              {
-                transportName: '상일동역3,4번출구',
-                transportTime: '도보 10분'
-              }
-            ]
-          })
-          setIsLoading(false)
-        }, 500)
+        // API 응답의 transportDatumRaws를 TransportData로 변환 (transportTime을 문자열로)
+        const transformedTransportData = apiData.transportDatumRaws.map(item => ({
+          transportName: item.transportName,
+          transportTime: `도보 ${item.transportTime}분`
+        }))
+        
+        setProgram({
+          programId: programId,
+          programName: apiData.programName,
+          programTarget: apiData.programTarget,
+          weekday: apiData.weekday,
+          startTime: apiData.startTime,
+          price: apiData.price,
+          reservationUrl: apiData.reservationUrl,
+          category: apiData.category,
+          subCategory: apiData.subCategory,
+          facility: apiData.facility,
+          facilityAddress: apiData.facilityAddress,
+          TransportData: transformedTransportData
+        })
       } catch (error) {
         console.error('프로그램 상세 조회 실패:', error)
+        setProgram(null)
+      } finally {
         setIsLoading(false)
       }
     }
 
-    fetchProgramDetail()
+    loadProgramDetail()
   }, [isOpen, programId])
   
   useEffect(() => {
-    if (!isOpen || activeTab !== '장소 안내') return
+    if (!isOpen || activeTab !== '장소 안내' || !program?.facilityAddress) return
 
     const initMap = () => {
       if (!window.kakao || !window.kakao.maps || !mapRef.current) return
 
-      const lat = 37.5550
-      const lng = 127.1547
+      // Geocoder로 주소를 좌표로 변환
+      const geocoder = new window.kakao.maps.services.Geocoder()
+      
+      geocoder.addressSearch(program.facilityAddress, (result: any, status: any) => {
+        if (status === window.kakao.maps.services.Status.OK) {
+          const coords = new window.kakao.maps.LatLng(result[0].y, result[0].x)
+          
+          const options = {
+            center: coords,
+            level: 4
+          }
 
-      const options = {
-        center: new window.kakao.maps.LatLng(lat, lng),
-        level: 3
-      }
+          const map = new window.kakao.maps.Map(mapRef.current, options)
 
-      const map = new window.kakao.maps.Map(mapRef.current, options)
-
-      const markerPosition = new window.kakao.maps.LatLng(lat, lng)
-      const marker = new window.kakao.maps.Marker({
-        position: markerPosition
+          const marker = new window.kakao.maps.Marker({
+            position: coords,
+            map: map
+          })
+          
+          // 커스텀 오버레이 콘텐츠
+          const overlayContent = document.createElement('div')
+          overlayContent.style.cssText = `
+            padding: 8px 16px;
+            background: #1A1A1A;
+            border-radius: 8px;
+            white-space: nowrap;
+            color: #13EC5B;
+            font-size: 12px;
+            font-weight: 600;
+            transform: translateY(-45px);
+          `
+          overlayContent.textContent = program.facility
+          
+          const customOverlay = new window.kakao.maps.CustomOverlay({
+            position: coords,
+            content: overlayContent,
+            yAnchor: 1
+          })
+          customOverlay.setMap(map)
+        } else {
+          console.error('주소 검색 실패:', program.facilityAddress)
+        }
       })
-      marker.setMap(map)
     }
 
-    if (window.kakao && window.kakao.maps) {
+    if (window.kakao && window.kakao.maps && window.kakao.maps.services) {
       setTimeout(initMap, 100)
     } else {
       const script = document.createElement('script')
-      script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${import.meta.env.VITE_KAKAO_APP_KEY}&autoload=false`
+      script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${import.meta.env.VITE_KAKAO_APP_KEY}&autoload=false&libraries=services`
       script.async = true
       script.onload = () => {
         window.kakao.maps.load(initMap)
       }
       document.head.appendChild(script)
     }
-  }, [isOpen, activeTab])
+  }, [isOpen, activeTab, program])
   
   if (!isOpen) return null
 
