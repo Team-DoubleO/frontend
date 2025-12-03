@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { MapPin, Clock, Calendar, Grid3x3 } from 'lucide-react'
 import Button from '../components/Button'
@@ -6,6 +6,7 @@ import DayFilterModal from '../components/DayFilterModal'
 import TimeFilterModal from '../components/TimeFilterModal'
 import ProgramDetailModal from '../components/ProgramDetailModal'
 import { useSurveyStore } from '../store/surveyStore'
+import { fetchPrograms } from '../services/api'
 
 interface Program {
   programId: number
@@ -19,7 +20,7 @@ interface Program {
 
 function ProgramListPage() {
   const navigate = useNavigate()
-  const { weekday, startTime, setWeekday, setStartTime, getSurveyData } = useSurveyStore()
+  const { weekday, startTime, setWeekday, setStartTime, getProgramRequest } = useSurveyStore()
   const [selectedFilter, setSelectedFilter] = useState<string>('전체')
   const [isDayModalOpen, setIsDayModalOpen] = useState(false)
   const [isTimeModalOpen, setIsTimeModalOpen] = useState(false)
@@ -28,64 +29,10 @@ function ProgramListPage() {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [selectedProgramId, setSelectedProgramId] = useState<number | null>(null)
   const [isLoading, setIsLoading] = useState(false)
-
-  // TODO: 실제로는 설문 결과를 기반으로 API에서 받아온 데이터 사용
-  const programs: Program[] = [
-    {
-      programId: 1,
-      programName: '키성장 쑥쑥 초등농구',
-      weekday: ['월', '수'],
-      startTime: '15:00',
-      category: '구기 스포츠',
-      subCategory: '농구',
-      facility: '의왕청소년수련관체육관'
-    },
-    {
-      programId: 2,
-      programName: '키성장 쑥쑥 초등농구',
-      weekday: ['월', '수'],
-      startTime: '15:00',
-      category: '구기 스포츠',
-      subCategory: '농구',
-      facility: '의왕청소년수련관체육관'
-    },
-    {
-      programId: 3,
-      programName: '키성장 쑥쑥 초등농구',
-      weekday: ['월', '수'],
-      startTime: '15:00',
-      category: '구기 스포츠',
-      subCategory: '농구',
-      facility: '의왕청소년수련관체육관'
-    },
-    {
-      programId: 4,
-      programName: '키성장 쑥쑥 초등농구',
-      weekday: ['월', '수'],
-      startTime: '15:00',
-      category: '구기 스포츠',
-      subCategory: '농구',
-      facility: '의왕청소년수련관체육관'
-    },
-    {
-      programId: 5,
-      programName: '키성장 쑥쑥 초등농구',
-      weekday: ['월', '수'],
-      startTime: '15:00',
-      category: '구기 스포츠',
-      subCategory: '농구',
-      facility: '의왕청소년수련관체육관'
-    },
-    {
-      programId: 6,
-      programName: '키성장 쑥쑥 초등농구',
-      weekday: ['월', '수'],
-      startTime: '15:00',
-      category: '구기 스포츠',
-      subCategory: '농구',
-      facility: '의왕청소년수련관체육관'
-    },
-  ]
+  const [programs, setPrograms] = useState<Program[]>([])
+  const [hasMore, setHasMore] = useState(true)
+  const [isFetchingMore, setIsFetchingMore] = useState(false)
+  const observerTarget = useRef<HTMLDivElement>(null)
 
   const filters = [
     { label: '전체', icon: Grid3x3 },
@@ -93,11 +40,19 @@ function ProgramListPage() {
     { label: '시간대', icon: Clock }
   ]
 
-  // 필터 변경 시 API 재요청
-  useEffect(() => {
-    const fetchPrograms = async () => {
+  // 초기 프로그램 로딩 및 필터 변경 시 재요청
+  const loadPrograms = useCallback(async (reset = false) => {
+    if (reset) {
       setIsLoading(true)
-      
+      setPrograms([])
+      setHasMore(true)
+    } else if (!hasMore || isFetchingMore) {
+      return
+    } else {
+      setIsFetchingMore(true)
+    }
+
+    try {
       // Zustand store 업데이트
       if (selectedDays.length > 0) {
         setWeekday(selectedDays)
@@ -110,37 +65,66 @@ function ProgramListPage() {
       } else {
         setStartTime(undefined)
       }
+
+      const lastProgramId = reset ? undefined : programs[programs.length - 1]?.programId
+      const requestBody = getProgramRequest()
+      const response = await fetchPrograms(requestBody, 20, lastProgramId)
       
-      // 전체 설문 데이터 가져오기
-      const surveyData = getSurveyData()
-      console.log('API 요청 데이터:', surveyData)
-      
-      // TODO: 실제 API 호출
-      
+      if (response.data.length === 0) {
+        setHasMore(false)
+      } else {
+        setPrograms(prev => reset ? response.data : [...prev, ...response.data])
+      }
+    } catch (error) {
+      console.error('프로그램 로딩 실패:', error)
+      setHasMore(false)
+    } finally {
       setIsLoading(false)
+      setIsFetchingMore(false)
     }
-    
-    fetchPrograms()
+  }, [selectedDays, selectedTimes, programs, hasMore, isFetchingMore, setWeekday, setStartTime, getProgramRequest])
+
+  // 필터 변경 시 초기화하고 새로 로드
+  useEffect(() => {
+    loadPrograms(true)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDays, selectedTimes])
+
+  // Intersection Observer로 무한 스크롤 구현
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting && hasMore && !isFetchingMore && !isLoading) {
+          loadPrograms(false)
+        }
+      },
+      { threshold: 0.1 }
+    )
+
+    const currentTarget = observerTarget.current
+    if (currentTarget) {
+      observer.observe(currentTarget)
+    }
+
+    return () => {
+      if (currentTarget) {
+        observer.unobserve(currentTarget)
+      }
+    }
+  }, [hasMore, isFetchingMore, isLoading, loadPrograms])
 
   const handleFilterClick = (label: string) => {
     if (label === '요일') {
       setIsDayModalOpen(true)
     } else if (label === '시간대') {
       setIsTimeModalOpen(true)
-    } else {
+    } else if (label === '전체') {
       setSelectedFilter(label)
       // 전체를 선택하면 요일/시간대 필터 초기화
-      if (label === '전체') {
-        setSelectedDays([])
-        setSelectedTimes([])
-      }
+      setSelectedDays([])
+      setSelectedTimes([])
     }
   }
-
-  const filteredPrograms = selectedFilter === '전체' 
-    ? programs 
-    : programs.filter(p => p.category === selectedFilter)
 
   const handleProgramClick = (programId: number) => {
     setSelectedProgramId(programId)
@@ -228,7 +212,7 @@ function ProgramListPage() {
         />
 
         {/* Programs Grid */}
-        {isLoading ? (
+        {isLoading && programs.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20">
             <div className="relative w-16 h-16 mb-4">
               <div className="absolute top-0 left-0 w-full h-full border-4 border-gray-700 rounded-full"></div>
@@ -236,40 +220,56 @@ function ProgramListPage() {
             </div>
             <p className="text-gray-400 text-lg">프로그램을 불러오는 중...</p>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-            {filteredPrograms.map((program) => (
-              <div
-                key={program.programId}
-                onClick={() => handleProgramClick(program.programId)}
-                className="bg-gray-800/50 border border-gray-700 rounded-lg p-5 hover:border-primary/50 transition-all cursor-pointer"
-              >
-                {/* Category Badge */}
-                <div className="inline-block bg-primary/80 text-dark text-sm font-semibold px-3 py-1 rounded-full mb-2">
-                  {program.subCategory}
-                </div>
-
-                {/* Title */}
-                <h3 className="text-white text-xl font-bold mb-3">{program.programName}</h3>
-
-                {/* Details */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 flex-shrink-0 text-primary" />
-                    <span className='text-white'><span className="font-bold">요일</span> {program.weekday.join(', ')}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 flex-shrink-0 text-primary" />
-                    <span className='text-white'><span className="font-bold">시간</span> {program.startTime}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 flex-shrink-0 text-primary" />
-                    <span className='text-white'><span className="font-bold">장소</span> {program.facility}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
+        ) : programs.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20">
+            <p className="text-gray-400 text-lg">조건에 맞는 프로그램이 없습니다.</p>
           </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+              {programs.map((program) => (
+                <div
+                  key={program.programId}
+                  onClick={() => handleProgramClick(program.programId)}
+                  className="bg-gray-800/50 border border-gray-700 rounded-lg p-5 hover:border-primary/50 transition-all cursor-pointer"
+                >
+                  {/* Category Badge */}
+                  <div className="inline-block bg-primary/80 text-dark text-sm font-semibold px-3 py-1 rounded-full mb-2">
+                    {program.subCategory}
+                  </div>
+
+                  {/* Title */}
+                  <h3 className="text-white text-xl font-bold mb-3">{program.programName}</h3>
+
+                  {/* Details */}
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4 flex-shrink-0 text-primary" />
+                      <span className='text-white'><span className="font-bold">요일</span> {program.weekday.join(', ')}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4 flex-shrink-0 text-primary" />
+                      <span className='text-white'><span className="font-bold">시간</span> {program.startTime}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <MapPin className="w-4 h-4 flex-shrink-0 text-primary" />
+                      <span className='text-white'><span className="font-bold">장소</span> {program.facility}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            {/* Infinite Scroll Observer Target */}
+            <div ref={observerTarget} className="h-20 flex items-center justify-center">
+              {isFetchingMore && (
+                <div className="relative w-12 h-12">
+                  <div className="absolute top-0 left-0 w-full h-full border-4 border-gray-700 rounded-full"></div>
+                  <div className="absolute top-0 left-0 w-full h-full border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              )}
+            </div>
+          </>
         )}
 
         {/* Back Button */}

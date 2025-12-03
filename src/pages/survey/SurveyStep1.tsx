@@ -17,7 +17,7 @@ function SurveyStep1() {
 
   const handleNext = () => {
     if (selectedGender) {
-      setGender(selectedGender === 'male' ? 'M' : 'F')
+      setGender(selectedGender === 'male' ? '남성' : '여성')
       navigate('/survey/step2')
     }
   }
