@@ -11,6 +11,7 @@ function SurveyStep3() {
   const [currentPosition, setCurrentPosition] = useState<{ lat: number; lng: number } | null>(null)
   const [address, setAddress] = useState<string>('')
   const [loading, setLoading] = useState<boolean>(true)
+  const [mapLoaded, setMapLoaded] = useState<boolean>(false)
   const mapRef = useRef<HTMLDivElement>(null)
   const kakaoMapRef = useRef<kakao.maps.Map | null>(null)
   const markerRef = useRef<kakao.maps.Marker | null>(null)
@@ -58,25 +59,44 @@ function SurveyStep3() {
 
   // Kakao Maps 스크립트 로드
   useEffect(() => {
+    // 이미 스크립트가 로드되어 있는지 확인
+    if (window.kakao && window.kakao.maps) {
+      window.kakao.maps.load(() => {
+        setMapLoaded(true)
+      })
+      return
+    }
+
     const script = document.createElement('script')
     script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${import.meta.env.VITE_KAKAO_APP_KEY}&libraries=services&autoload=false`
     script.async = true
-    document.head.appendChild(script)
-
+    
     script.onload = () => {
       window.kakao.maps.load(() => {
-        // 스크립트 로드 완료
+        setMapLoaded(true)
       })
     }
 
+    script.onerror = () => {
+      console.error('Kakao Maps 스크립트 로드 실패')
+      setLoading(false)
+    }
+
+    document.head.appendChild(script)
+
     return () => {
-      document.head.removeChild(script)
+      if (document.head.contains(script)) {
+        document.head.removeChild(script)
+      }
     }
   }, [])
 
   // 지도 초기화
   useEffect(() => {
-    if (currentPosition && mapRef.current && window.kakao && window.kakao.maps) {
+    if (!currentPosition || !mapRef.current || !mapLoaded) return
+    if (!window.kakao || !window.kakao.maps) return
+
+    try {
       const container = mapRef.current
       const options = {
         center: new window.kakao.maps.LatLng(currentPosition.lat, currentPosition.lng),
@@ -87,37 +107,52 @@ function SurveyStep3() {
         disableDoubleClickZoom: false
       }
 
-      kakaoMapRef.current = new window.kakao.maps.Map(container, options)
+      // 기존 지도가 있으면 재사용, 없으면 새로 생성
+      if (!kakaoMapRef.current) {
+        kakaoMapRef.current = new window.kakao.maps.Map(container, options)
+      } else {
+        // 기존 지도의 중심만 이동
+        const moveLatLng = new window.kakao.maps.LatLng(currentPosition.lat, currentPosition.lng)
+        kakaoMapRef.current.setCenter(moveLatLng)
+      }
 
-      // 마커 추가
+      // 마커 추가 또는 업데이트
       const markerPosition = new window.kakao.maps.LatLng(currentPosition.lat, currentPosition.lng)
-      markerRef.current = new window.kakao.maps.Marker({
-        position: markerPosition,
-        map: kakaoMapRef.current
-      })
-
-      // 지도 클릭/터치 이벤트
-      window.kakao.maps.event.addListener(kakaoMapRef.current, 'click', (mouseEvent: kakao.maps.event.MouseEvent) => {
-        const latlng = mouseEvent.latLng
-        
-        // 현재 위치 업데이트
-        setCurrentPosition({
-          lat: latlng.getLat(),
-          lng: latlng.getLng()
+      
+      if (!markerRef.current) {
+        markerRef.current = new window.kakao.maps.Marker({
+          position: markerPosition,
+          map: kakaoMapRef.current
         })
-        
-        // 마커 위치 변경
-        if (markerRef.current) {
-          markerRef.current.setPosition(latlng)
-        }
-        
-        // 주소 가져오기
-        getAddressFromCoords(latlng.getLat(), latlng.getLng())
-      })
+
+        // 지도 클릭/터치 이벤트 (한 번만 등록)
+        window.kakao.maps.event.addListener(kakaoMapRef.current, 'click', (mouseEvent: kakao.maps.event.MouseEvent) => {
+          const latlng = mouseEvent.latLng
+          
+          // 현재 위치 업데이트
+          setCurrentPosition({
+            lat: latlng.getLat(),
+            lng: latlng.getLng()
+          })
+          
+          // 마커 위치 변경
+          if (markerRef.current) {
+            markerRef.current.setPosition(latlng)
+          }
+          
+          // 주소 가져오기
+          getAddressFromCoords(latlng.getLat(), latlng.getLng())
+        })
+      } else {
+        markerRef.current.setPosition(markerPosition)
+      }
 
       setLoading(false)
+    } catch (error) {
+      console.error('지도 초기화 오류:', error)
+      setLoading(false)
     }
-  }, [currentPosition])
+  }, [currentPosition, mapLoaded])
 
   const handleNext = () => {
     if (selectedLocation && currentPosition) {
