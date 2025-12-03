@@ -158,12 +158,12 @@ function SurveyStep4() {
                           : '전체 선택'}
                       </button>
                     </div>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                       {category.subcategories.map((subcategory) => (
                         <button
                           key={subcategory}
                           onClick={() => toggleCategory(subcategory)}
-                          className={`py-3 px-3 rounded-lg border-2 transition-all text-sm ${
+                          className={`py-3 px-3 rounded-lg border-2 transition-all text-sm sm:text-sm ${
                             selectedCategories.includes(subcategory)
                               ? 'border-primary bg-primary/10 text-white font-semibold'
                               : 'border-gray-700 hover:border-gray-600 text-gray-300'

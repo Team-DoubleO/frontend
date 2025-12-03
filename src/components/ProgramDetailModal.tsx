@@ -134,16 +134,16 @@ function ProgramDetailModal({ isOpen, onClose, programId }: ProgramDetailModalPr
 
   return (
     <div 
-      className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-2 sm:p-4"
       onClick={handleBackdropClick}
     >
-      <div className="bg-gray-900 border-2 border-primary rounded-lg w-full max-w-2xl px-14 py-10 relative">
+      <div className="bg-gray-900 border-2 border-primary rounded-lg w-full max-w-2xl px-4 py-6 sm:px-8 sm:py-8 lg:px-14 lg:py-10 relative max-h-[95vh] overflow-y-auto">
         {/* Close Button */}
         <button
           onClick={handleClose}
-          className="absolute top-6 right-6 text-white hover:text-primary transition-colors"
+          className="absolute top-3 right-3 sm:top-6 sm:right-6 text-white hover:text-primary transition-colors z-10"
         >
-          <X className="w-6 h-6" />
+          <X className="w-5 h-5 sm:w-6 sm:h-6" />
         </button>
 
         {isLoading ? (
@@ -161,20 +161,20 @@ function ProgramDetailModal({ isOpen, onClose, programId }: ProgramDetailModalPr
         ) : (
           <>
             {/* Category and Title */}
-            <div className="mb-6">
-              <div className="text-sm text-gray-400 mb-2">
+            <div className="mb-4 sm:mb-6">
+              <div className="text-xs sm:text-sm text-gray-400 mb-1 sm:mb-2">
                 {program.category} / {program.subCategory}
               </div>
-              <h2 className="text-2xl font-bold text-white">
+              <h2 className="text-xl sm:text-2xl font-bold text-white">
                 {program.programName}
               </h2>
             </div>
 
         {/* Tabs */}
-        <div className="flex gap-8 mb-6 border-b border-gray-700">
+        <div className="flex gap-4 sm:gap-8 mb-4 sm:mb-6 border-b border-gray-700">
           <button 
             onClick={() => setActiveTab('프로그램 소개')}
-            className={`font-semibold pb-3 border-b-2 transition-colors ${
+            className={`text-sm sm:text-base font-semibold pb-2 sm:pb-3 border-b-2 transition-colors ${
               activeTab === '프로그램 소개' 
                 ? 'text-primary border-primary' 
                 : 'text-gray-400 border-transparent hover:text-white'
@@ -184,7 +184,7 @@ function ProgramDetailModal({ isOpen, onClose, programId }: ProgramDetailModalPr
           </button>
           <button 
             onClick={() => setActiveTab('장소 안내')}
-            className={`font-semibold pb-3 border-b-2 transition-colors ${
+            className={`text-sm sm:text-base font-semibold pb-2 sm:pb-3 border-b-2 transition-colors ${
               activeTab === '장소 안내' 
                 ? 'text-primary border-primary' 
                 : 'text-gray-400 border-transparent hover:text-white'
@@ -196,77 +196,77 @@ function ProgramDetailModal({ isOpen, onClose, programId }: ProgramDetailModalPr
 
         {/* Tab Content */}
         {activeTab === '프로그램 소개' ? (
-          <div className="space-y-4 mb-10" key="program-tab">
-            <div className="flex items-center gap-3">
-              <User className="w-5 h-5 text-primary" />
+          <div className="space-y-3 sm:space-y-4 mb-6 sm:mb-10" key="program-tab">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <User className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />
               <div>
-                <span className="text-white font-bold">대상</span>
-                <span className="text-white ml-4">{program.programTarget}</span>
+                <span className="text-sm sm:text-base text-white font-bold">대상</span>
+                <span className="text-sm sm:text-base text-white ml-2 sm:ml-4">{program.programTarget}</span>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <Calendar className="w-5 h-5 text-primary" />
+            <div className="flex items-center gap-2 sm:gap-3">
+              <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />
               <div>
-                <span className="text-white font-bold">요일</span>
-                <span className="text-white ml-4">{program.weekday.join(', ')}</span>
+                <span className="text-sm sm:text-base text-white font-bold">요일</span>
+                <span className="text-sm sm:text-base text-white ml-2 sm:ml-4">{program.weekday.join(', ')}</span>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <Clock className="w-5 h-5 text-primary" />
+            <div className="flex items-center gap-2 sm:gap-3">
+              <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />
               <div>
-                <span className="text-white font-bold">시간</span>
-                <span className="text-white ml-4">{program.startTime}</span>
+                <span className="text-sm sm:text-base text-white font-bold">시간</span>
+                <span className="text-sm sm:text-base text-white ml-2 sm:ml-4">{program.startTime}</span>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <MapPin className="w-5 h-5 text-primary" />
+            <div className="flex items-center gap-2 sm:gap-3">
+              <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />
               <div>
-                <span className="text-white font-bold">장소</span>
-                <span className="text-white ml-4">{program.facility}</span>
+                <span className="text-sm sm:text-base text-white font-bold">장소</span>
+                <span className="text-sm sm:text-base text-white ml-2 sm:ml-4">{program.facility}</span>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <CreditCard className="w-5 h-5 text-primary" />
+            <div className="flex items-center gap-2 sm:gap-3">
+              <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />
               <div>
-                <span className="text-white font-bold">가격</span>
-                <span className="text-white ml-4">{program.price === 0 ? '무료' : `${program.price.toLocaleString()}원`}</span>
+                <span className="text-sm sm:text-base text-white font-bold">가격</span>
+                <span className="text-sm sm:text-base text-white ml-2 sm:ml-4">{program.price === 0 ? '무료' : `${program.price.toLocaleString()}원`}</span>
               </div>
             </div>
           </div>
         ) : activeTab === '장소 안내' ? (
-          <div className="mb-10" key="location-tab">
+          <div className="mb-6 sm:mb-10" key="location-tab">
             {/* Kakao Map */}
             <div 
               ref={mapRef}
               key="kakao-map"
-              className="w-full h-64 bg-gray-800 rounded-lg mb-6 overflow-hidden"
+              className="w-full h-48 sm:h-64 bg-gray-800 rounded-lg mb-4 sm:mb-6 overflow-hidden"
             />
 
             {/* Location Details */}
-            <div className="space-y-4">
-              <div className="flex items-start gap-3">
-                <MapPin className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
+            <div className="space-y-3 sm:space-y-4">
+              <div className="flex items-start gap-2 sm:gap-3">
+                <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0 mt-0.5 sm:mt-1" />
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-white font-bold">장소</span>
-                    <span className="text-white">{program.facility}</span>
+                  <div className="flex items-center gap-1 sm:gap-2 mb-1">
+                    <span className="text-sm sm:text-base text-white font-bold">장소</span>
+                    <span className="text-sm sm:text-base text-white">{program.facility}</span>
                   </div>
-                  <div className="text-white">{program.facilityAddress}</div>
+                  <div className="text-xs sm:text-sm text-white">{program.facilityAddress}</div>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3">
-                <Train className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
+              <div className="flex items-start gap-2 sm:gap-3">
+                <Train className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0 mt-0.5 sm:mt-1" />
                 <div className="w-full">
-                  <div className="text-white font-bold mb-2">가까운 대중교통</div>
-                  <ul className="space-y-2">
+                  <div className="text-sm sm:text-base text-white font-bold mb-1.5 sm:mb-2">가까운 대중교통</div>
+                  <ul className="space-y-1.5 sm:space-y-2">
                     {program.TransportData.map((transport, index) => (
-                      <li key={index} className="flex items-center text-white">
-                        <span className="w-1.5 h-1.5 bg-white rounded-full mr-2"></span>
+                      <li key={index} className="flex items-center text-xs sm:text-sm text-white">
+                        <span className="w-1.5 h-1.5 bg-white rounded-full mr-1.5 sm:mr-2 flex-shrink-0"></span>
                         <span>{transport.transportName} ({transport.transportTime})</span>
                       </li>
                     ))}
