@@ -45,7 +45,8 @@ export interface ProgramDetailResponse {
     subCategory: string
     facility: string
     facilityAddress: string
-    transportDatumRaws: {
+    transportData: {
+      transportType: string
       transportName: string
       transportTime: number
     }[]

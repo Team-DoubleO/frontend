@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
-import { X, Calendar, Clock, User, CreditCard, MapPin, Train } from 'lucide-react'
+import { X, Calendar, Clock, User, CreditCard, MapPin, Train, Bus } from 'lucide-react'
 import Button from './Button'
 import { fetchProgramDetail } from '../services/api'
 
 interface TransportData {
+  transportType: string
   transportName: string
   transportTime: string
 }
@@ -41,12 +42,12 @@ function ProgramDetailModal({ isOpen, onClose, programId }: ProgramDetailModalPr
 
     const loadProgramDetail = async () => {
       setIsLoading(true)
-      try {
-        const response = await fetchProgramDetail(programId)
+      try {        const response = await fetchProgramDetail(programId)
         const apiData = response.data
         
-        // API 응답의 transportDatumRaws를 TransportData로 변환 (transportTime을 문자열로)
-        const transformedTransportData = apiData.transportDatumRaws.map(item => ({
+        // API 응답의 transportData를 TransportData로 변환 (transportTime을 문자열로)
+        const transformedTransportData = apiData.transportData.map((item: { transportType: string; transportName: string; transportTime: number }) => ({
+          transportType: item.transportType,
           transportName: item.transportName,
           transportTime: `도보 ${item.transportTime}분`
         }))
@@ -257,19 +258,20 @@ function ProgramDetailModal({ isOpen, onClose, programId }: ProgramDetailModalPr
                   </div>
                   <div className="text-xs sm:text-sm text-white">{program.facilityAddress}</div>
                 </div>
-              </div>
-
-              <div className="flex items-start gap-2 sm:gap-3">
+              </div>              <div className="flex items-start gap-2 sm:gap-3">
                 <Train className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0 mt-0.5 sm:mt-1" />
                 <div className="w-full">
                   <div className="text-sm sm:text-base text-white font-bold mb-1.5 sm:mb-2">가까운 대중교통</div>
                   <ul className="space-y-1.5 sm:space-y-2">
-                    {program.TransportData.map((transport, index) => (
-                      <li key={index} className="flex items-center text-xs sm:text-sm text-white">
-                        <span className="w-1.5 h-1.5 bg-white rounded-full mr-1.5 sm:mr-2 flex-shrink-0"></span>
-                        <span>{transport.transportName} ({transport.transportTime})</span>
-                      </li>
-                    ))}
+                    {program.TransportData.map((transport, index) => {
+                      const IconComponent = transport.transportType === '버스' ? Bus : Train
+                      return (
+                        <li key={index} className="flex items-center gap-2 text-xs sm:text-sm text-white">
+                          <IconComponent className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary flex-shrink-0" />
+                          <span>{transport.transportName} ({transport.transportTime})</span>
+                        </li>
+                      )
+                    })}
                   </ul>
                 </div>
               </div>
