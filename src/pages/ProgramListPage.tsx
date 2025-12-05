@@ -278,6 +278,7 @@ function ProgramListPage() {
           variant="outline"
           size="medium"
           onClick={() => navigate('/')}
+          className='bg-dark'
         >
           처음으로 돌아가기
         </Button>

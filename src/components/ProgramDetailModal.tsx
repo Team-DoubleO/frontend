@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { X, Calendar, Clock, User, CreditCard, MapPin, Train, Bus } from 'lucide-react'
+import { X, Calendar, Clock, User, CreditCard, MapPin, TrainFront, BusFront, Navigation } from 'lucide-react'
 import Button from './Button'
 import { fetchProgramDetail } from '../services/api'
 
@@ -258,16 +258,16 @@ function ProgramDetailModal({ isOpen, onClose, programId }: ProgramDetailModalPr
                   </div>
                   <div className="text-xs sm:text-sm text-white">{program.facilityAddress}</div>
                 </div>
-              </div>              <div className="flex items-start gap-2 sm:gap-3">
-                <Train className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0 mt-0.5 sm:mt-1" />
+              </div>              
+              <div className="flex items-start gap-2 sm:gap-3">
+                <Navigation className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0 mt-0.5 sm:mt-1" />
                 <div className="w-full">
-                  <div className="text-sm sm:text-base text-white font-bold mb-1.5 sm:mb-2">가까운 대중교통</div>
-                  <ul className="space-y-1.5 sm:space-y-2">
+                  <div className="text-sm sm:text-base text-white font-bold mb-1.5 sm:mb-2">가까운 대중교통</div>                  <ul className="space-y-1.5 sm:space-y-2">
                     {program.TransportData.map((transport, index) => {
-                      const IconComponent = transport.transportType === '버스' ? Bus : Train
+                      const IconComponent = transport.transportType === '버스' ? BusFront : TrainFront
                       return (
                         <li key={index} className="flex items-center gap-2 text-xs sm:text-sm text-white">
-                          <IconComponent className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary flex-shrink-0" />
+                          <IconComponent className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white flex-shrink-0" />
                           <span>{transport.transportName} ({transport.transportTime})</span>
                         </li>
                       )
