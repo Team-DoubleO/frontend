@@ -267,6 +267,7 @@ function ProgramDetailModal({ isOpen, onClose, programId }: ProgramDetailModalPr
                       return (
                         <li key={index} className="flex items-center gap-2 text-xs sm:text-sm text-white">
                           <IconComponent className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white flex-shrink-0" />
+                          <span className="sr-only font-bold mr-2">{transport.transportType}:</span>
                           <span>{transport.transportName} ({transport.transportTime})</span>
                         </li>
                       )
