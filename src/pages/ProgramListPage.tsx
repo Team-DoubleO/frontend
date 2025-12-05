@@ -259,8 +259,7 @@ function ProgramListPage() {
                 </div>
               ))}
             </div>
-            
-            {/* Infinite Scroll Observer Target */}
+              {/* Infinite Scroll Observer Target */}
             <div ref={observerTarget} className="h-20 flex items-center justify-center">
               {isFetchingMore && (
                 <div className="relative w-12 h-12">
@@ -271,17 +270,17 @@ function ProgramListPage() {
             </div>
           </>
         )}
+      </div>
 
-        {/* Back Button */}
-        <div className="flex justify-center">
-          <Button
-            variant="outline"
-            size="medium"
-            onClick={() => navigate('/')}
-          >
-            처음으로 돌아가기
-          </Button>
-        </div>
+      {/* Fixed Bottom Button */}
+      <div className="fixed bottom-14 left-1/2 transform -translate-x-1/2 z-50">
+        <Button
+          variant="outline"
+          size="medium"
+          onClick={() => navigate('/')}
+        >
+          처음으로 돌아가기
+        </Button>
       </div>
     </div>
   )
