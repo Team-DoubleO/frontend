@@ -32,10 +32,16 @@ function SurveyStep3() {
       })
     }
   }
-
   // 현재 위치 가져오기
   useEffect(() => {
     if (navigator.geolocation) {
+      // 옵션 설정으로 더 안정적으로 위치 가져오기
+      const options = {
+        enableHighAccuracy: false, // 높은 정확도 비활성화 (더 빠르고 안정적)
+        timeout: 10000, // 10초 타임아웃
+        maximumAge: 300000 // 5분 이내 캐시된 위치 정보 사용 가능
+      }
+
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const pos = {
@@ -47,12 +53,36 @@ function SurveyStep3() {
         },
         (error) => {
           console.error('위치 정보를 가져올 수 없습니다:', error)
+          
+          // 에러 타입별 메시지
+          let errorMessage = '위치 정보를 가져올 수 없습니다. '
+          switch(error.code) {
+            case error.PERMISSION_DENIED:
+              errorMessage += '위치 권한이 거부되었습니다. 브라우저 설정에서 위치 권한을 허용해주세요.'
+              break
+            case error.POSITION_UNAVAILABLE:
+              errorMessage += '위치 정보를 사용할 수 없습니다.'
+              break
+            case error.TIMEOUT:
+              errorMessage += '위치 정보 요청 시간이 초과되었습니다.'
+              break
+          }
+          
+          console.warn(errorMessage)
+          
           // 기본 위치 (서울시청)
           const defaultPos = { lat: 37.5665, lng: 126.9780 }
           setCurrentPosition(defaultPos)
           getAddressFromCoords(defaultPos.lat, defaultPos.lng)
-        }
+        },
+        options
       )
+    } else {
+      console.error('이 브라우저는 Geolocation을 지원하지 않습니다.')
+      // 기본 위치 (서울시청)
+      const defaultPos = { lat: 37.5665, lng: 126.9780 }
+      setCurrentPosition(defaultPos)
+      getAddressFromCoords(defaultPos.lat, defaultPos.lng)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -187,8 +217,17 @@ function SurveyStep3() {
                   </div>
                 </div>
               )}
+            </div>          
+          </div>          
+          
+          {/* Location Info - 주소가 없을 때만 표시 */}
+          {!address && (
+            <div className="p-3 sm:p-4 bg-gray-800/50 border border-primary/30 rounded-lg">
+              <p className="text-gray-400 text-xs sm:text-sm">
+                지도를 클릭하여 선호하는 위치를 직접 선택해 주세요.
+              </p>
             </div>
-          </div>
+          )}
 
           {/* Current Location Display */}
           {address && (
