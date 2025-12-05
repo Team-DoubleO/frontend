@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MapPin, Clock, Calendar, Grid3x3 } from 'lucide-react'
+import { MapPin, Clock, Calendar, Grid3x3, Sparkles } from 'lucide-react'
 import Button from '../components/Button'
 import DayFilterModal from '../components/DayFilterModal'
 import TimeFilterModal from '../components/TimeFilterModal'
 import ProgramDetailModal from '../components/ProgramDetailModal'
+import AIRoutineModal from '../components/AIRoutineModal'
 import { useSurveyStore } from '../store/surveyStore'
 import { fetchPrograms } from '../services/api'
 
@@ -18,8 +19,7 @@ interface Program {
   facility: string
 }
 
-function ProgramListPage() {
-  const navigate = useNavigate()
+function ProgramListPage() {  const navigate = useNavigate()
   const { weekday, startTime, setWeekday, setStartTime, getProgramRequest } = useSurveyStore()
   const [selectedFilter, setSelectedFilter] = useState<string>('전체')
   const [isDayModalOpen, setIsDayModalOpen] = useState(false)
@@ -28,6 +28,7 @@ function ProgramListPage() {
   const [selectedTimes, setSelectedTimes] = useState<string[]>(startTime || [])
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [selectedProgramId, setSelectedProgramId] = useState<number | null>(null)
+  const [isAIRoutineModalOpen, setIsAIRoutineModalOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [programs, setPrograms] = useState<Program[]>([])
   const [hasMore, setHasMore] = useState(true)
@@ -130,14 +131,26 @@ function ProgramListPage() {
     setSelectedProgramId(programId)
     setIsDetailModalOpen(true)
   }
-
   return (
     <div className="min-h-screen bg-dark">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">체육시설 프로그램 추천</h1>
-          <p className="text-gray-400">설문조사를 바탕으로 딱 맞는 체육시설 프로그램을 찾아왔어요.</p>
+          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4">
+            <div>
+              <h1 className="text-3xl font-bold text-white mb-2">체육시설 프로그램 추천</h1>
+              <p className="text-gray-400">설문조사를 바탕으로 딱 맞는 체육시설 프로그램을 찾아왔어요.</p>
+            </div>
+            <Button
+              variant="primary"
+              size="medium"
+              onClick={() => setIsAIRoutineModalOpen(true)}
+              className="flex items-center justify-center gap-2 whitespace-nowrap mt-2"
+            >
+              <Sparkles className="w-5 h-5" />
+              AI 운동 루틴 생성하기
+            </Button>
+          </div>
         </div>
 
         {/* Filters */}
@@ -204,11 +217,14 @@ function ProgramListPage() {
           onClose={() => setIsTimeModalOpen(false)}
           selectedTimes={selectedTimes}
           onTimesChange={setSelectedTimes}
-        />
-        <ProgramDetailModal
+        />        <ProgramDetailModal
           isOpen={isDetailModalOpen}
           onClose={() => setIsDetailModalOpen(false)}
           programId={selectedProgramId}
+        />
+        <AIRoutineModal
+          isOpen={isAIRoutineModalOpen}
+          onClose={() => setIsAIRoutineModalOpen(false)}
         />
 
         {/* Programs Grid */}

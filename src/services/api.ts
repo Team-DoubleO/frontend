@@ -72,4 +72,45 @@ export const fetchProgramDetail = async (programId: number): Promise<ProgramDeta
   return data
 }
 
+export interface AIRoutineRequest {
+  gender: string
+  age: string
+  latitude: number
+  longitude: number
+  favorites: string[]
+  height: number
+  weight: number
+  weekday?: string[]
+  startTime?: string[]
+}
+
+export interface AIRoutineSchedule {
+  dayKo: string
+  dayEn: string
+  time: string
+  place: string
+  type: string
+  distanceWalk: string
+  tag: string
+}
+
+export interface AIRoutineResponse {
+  status: string
+  message: string
+  data: {
+    planRange: string
+    subtitle: string
+    focus: string
+    targetSessions: number
+    totalMinutes: number
+    estimatedCalories: number
+    schedule: AIRoutineSchedule[]
+  }
+}
+
+export const generateAIRoutine = async (body: AIRoutineRequest): Promise<AIRoutineResponse> => {
+  const { data } = await api.post<AIRoutineResponse>('/api/v1/recommend', body)
+  return data
+}
+
 export default api
