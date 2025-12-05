@@ -270,10 +270,9 @@ function ProgramListPage() {
             </div>
           </>
         )}
-      </div>
-
+      </div>      
       {/* Fixed Bottom Button */}
-      <div className="fixed bottom-14 left-1/2 transform -translate-x-1/2 z-50">
+      <div className="fixed bottom-14 left-1/2 transform -translate-x-1/2 z-40">
         <Button
           variant="outline"
           size="medium"

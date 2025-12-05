@@ -126,7 +126,6 @@ function ProgramDetailModal({ isOpen, onClose, programId }: ProgramDetailModalPr
     setActiveTab('프로그램 소개')
     onClose()
   }
-
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
       handleClose()
@@ -135,7 +134,7 @@ function ProgramDetailModal({ isOpen, onClose, programId }: ProgramDetailModalPr
 
   return (
     <div 
-      className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-2 sm:p-4"
+      className="fixed inset-0 bg-black/70 flex items-center justify-center p-2 sm:p-4 z-60"
       onClick={handleBackdropClick}
     >
       <div className="bg-gray-900 border-2 border-primary rounded-lg w-full max-w-2xl px-4 py-6 sm:px-8 sm:py-8 lg:px-14 lg:py-10 relative max-h-[95vh] overflow-y-auto">
