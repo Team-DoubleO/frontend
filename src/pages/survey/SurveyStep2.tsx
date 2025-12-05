@@ -13,13 +13,20 @@ function SurveyStep2() {
     '영유아', '초등학생', '중학생', '고등학생', '성인', '시니어'
   ]
 
+  const mapAgeToBackend = (age: string): string => {
+    if (age === '영유아') return '영유아'
+    if (['초등학생', '중학생', '고등학생'].includes(age)) return '청소년'
+    if (['성인', '시니어'].includes(age)) return '성인'
+    return age
+  }
+
   useEffect(() => {
     setSelectedAge(age)
   }, [age])
 
   const handleNext = () => {
     if (selectedAge) {
-      setAge(selectedAge)
+      setAge(mapAgeToBackend(selectedAge))
       navigate('/survey/step3')
     }
   }
