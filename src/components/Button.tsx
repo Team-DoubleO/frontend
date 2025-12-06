@@ -15,7 +15,7 @@ function Button({
 }: ButtonProps) {
   const baseStyles = 'inline-flex items-center justify-center font-semibold rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed'
     const variantStyles = {
-    primary: 'bg-primary text-dark hover:opacity-90',
+    primary: 'bg-primary/80 text-dark hover:opacity-90',
     outline: 'border-2 border-primary text-white'
   }
   

@@ -140,15 +140,17 @@ function ProgramListPage() {  const navigate = useNavigate()
             <div>
               <h1 className="text-3xl font-bold text-white mb-2">체육시설 프로그램 추천</h1>
               <p className="text-gray-400">설문조사를 바탕으로 딱 맞는 체육시설 프로그램을 찾아왔어요.</p>
-            </div>
+            </div>            
             <Button
-              variant="primary"
+              variant="outline"
               size="medium"
               onClick={() => setIsAIRoutineModalOpen(true)}
-              className="flex items-center justify-center gap-2 whitespace-nowrap mt-2"
+              className="flex items-center justify-center gap-2 whitespace-nowrap mt-2 relative overflow-hidden group animate-pulse hover:animate-none"
             >
-              <Sparkles className="w-5 h-5" />
-              AI 운동 루틴 생성하기
+              {/* 반짝이는 배경 효과 */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/20 to-transparent animate-shimmer"></div>
+              <Sparkles className="w-5 h-5 text-primary animate-spin-slow" />
+              <span className="relative z-10">AI 운동 루틴 생성하기</span>
             </Button>
           </div>
         </div>

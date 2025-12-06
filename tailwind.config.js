@@ -3,8 +3,7 @@ export default {
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
-  ],
-  theme: {
+  ],  theme: {
     extend: {
       colors: {
         primary: '#13EC5B',
@@ -13,6 +12,16 @@ export default {
       },
       fontFamily: {
         sans: ['Pretendard', 'system-ui', 'sans-serif'],
+      },
+      animation: {
+        'spin-slow': 'spin 3s linear infinite',
+        'shimmer': 'shimmer 2s infinite',
+      },
+      keyframes: {
+        shimmer: {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(100%)' },
+        },
       },
     },
   },
