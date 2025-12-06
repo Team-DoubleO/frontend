@@ -28,6 +28,7 @@ export interface ProgramResponse {
     category: string
     subCategory: string
     facility: string
+    distance: number
   }[]
 }
 
@@ -56,11 +57,15 @@ export interface ProgramDetailResponse {
 export const fetchPrograms = async (
   body: ProgramRequest,
   pageSize: number,
-  lastProgramId?: number
+  lastProgramId?: number,
+  lastDistance?: number
 ): Promise<ProgramResponse> => {
-  const params: { pageSize: number; lastProgramId?: number } = { pageSize }
+  const params: { pageSize: number; lastProgramId?: number; lastDistance?: number } = { pageSize }
   if (lastProgramId) {
     params.lastProgramId = lastProgramId
+  }
+  if (lastDistance !== undefined) {
+    params.lastDistance = lastDistance
   }
   
   const { data } = await api.post<ProgramResponse>('/api/v1/programs', body, { params })

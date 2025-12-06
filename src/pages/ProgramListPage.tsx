@@ -17,6 +17,7 @@ interface Program {
   category: string
   subCategory: string
   facility: string
+  distance: number
 }
 
 function ProgramListPage() {  const navigate = useNavigate()
@@ -65,11 +66,11 @@ function ProgramListPage() {  const navigate = useNavigate()
         setStartTime(selectedTimes)
       } else {
         setStartTime(undefined)
-      }
-
-      const lastProgramId = reset ? undefined : programs[programs.length - 1]?.programId
+      }      const lastProgram = reset ? undefined : programs[programs.length - 1]
+      const lastProgramId = lastProgram?.programId
+      const lastDistance = lastProgram?.distance
       const requestBody = getProgramRequest()
-      const response = await fetchPrograms(requestBody, 20, lastProgramId)
+      const response = await fetchPrograms(requestBody, 20, lastProgramId, lastDistance)
       
       if (response.data.length === 0) {
         setHasMore(false)
