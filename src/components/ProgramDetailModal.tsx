@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
-import { X, Calendar, Clock, User, CreditCard, MapPin, TrainFront, BusFront, Navigation } from 'lucide-react'
+import { X, Calendar, Clock, User, CreditCard, MapPin, TrainFront, BusFront, Route, Navigation } from 'lucide-react'
 import Button from './Button'
 import { fetchProgramDetail } from '../services/api'
+import { useSurveyStore } from '../store/surveyStore'
 
 interface TransportData {
   transportType: string
@@ -31,10 +32,12 @@ interface ProgramDetailModalProps {
 }
 
 function ProgramDetailModal({ isOpen, onClose, programId }: ProgramDetailModalProps) {
-  const [activeTab, setActiveTab] = useState<'프로그램 소개' | '장소 안내'>('프로그램 소개')
+  const [activeTab, setActiveTab] = useState<'프로그램 소개' | '장소 안내' | '길찾기'>('프로그램 소개')
   const [program, setProgram] = useState<Program | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const mapRef = useRef<HTMLDivElement>(null)
+  const directionsMapRef = useRef<HTMLDivElement>(null)
+  const { latitude: userLat, longitude: userLng } = useSurveyStore()
 
   // 프로그램 상세 정보 가져오기
   useEffect(() => {
@@ -119,7 +122,81 @@ function ProgramDetailModal({ isOpen, onClose, programId }: ProgramDetailModalPr
       document.head.appendChild(script)
     }
   }, [isOpen, activeTab, program])
-  
+
+  // 길찾기 탭 지도 초기화
+  useEffect(() => {
+    if (!isOpen || activeTab !== '길찾기' || !program?.facilityAddress || !userLat || !userLng) return
+
+    const initDirectionsMap = () => {
+      if (!window.kakao || !window.kakao.maps || !directionsMapRef.current) return
+
+      const geocoder = new window.kakao.maps.services.Geocoder()
+
+      geocoder.addressSearch(program.facilityAddress, (result, status) => {
+        if (status === window.kakao.maps.services.Status.OK) {
+          const destLat = parseFloat(result[0].y)
+          const destLng = parseFloat(result[0].x)
+          const destCoords = new window.kakao.maps.LatLng(destLat, destLng)
+          const originCoords = new window.kakao.maps.LatLng(userLat, userLng)
+
+          // 두 점의 중심 계산
+          const centerLat = (userLat + destLat) / 2
+          const centerLng = (userLng + destLng) / 2
+          const centerCoords = new window.kakao.maps.LatLng(centerLat, centerLng)
+
+          const options = {
+            center: centerCoords,
+            level: 7
+          }
+
+          const map = new window.kakao.maps.Map(directionsMapRef.current!, options)
+
+          // 출발지 마커 (파란색)
+          const originMarkerImage = new window.kakao.maps.MarkerImage(
+            'https://t1.daumcdn.net/localimg/localimages/07/2018/pc/img/marker_spot.png',
+            new window.kakao.maps.Size(33, 44)
+          )
+          new window.kakao.maps.Marker({
+            position: originCoords,
+            map: map,
+            image: originMarkerImage,
+            title: '출발지'
+          })
+
+          // 도착지 마커 (노란색)
+          const destMarkerImage = new window.kakao.maps.MarkerImage(
+            'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png',
+            new window.kakao.maps.Size(24, 35)
+          )
+          new window.kakao.maps.Marker({
+            position: destCoords,
+            map: map,
+            image: destMarkerImage,
+            title: '도착지'
+          })
+
+          // 두 마커가 모두 보이도록 bounds 설정
+          const bounds = new window.kakao.maps.LatLngBounds()
+          bounds.extend(originCoords)
+          bounds.extend(destCoords)
+          map.setBounds(bounds)
+        }
+      })
+    }
+
+    if (window.kakao && window.kakao.maps && window.kakao.maps.services) {
+      setTimeout(initDirectionsMap, 100)
+    } else {
+      const script = document.createElement('script')
+      script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${import.meta.env.VITE_KAKAO_APP_KEY}&autoload=false&libraries=services`
+      script.async = true
+      script.onload = () => {
+        window.kakao.maps.load(initDirectionsMap)
+      }
+      document.head.appendChild(script)
+    }
+  }, [isOpen, activeTab, program, userLat, userLng])
+
   if (!isOpen) return null
 
   const handleClose = () => {
@@ -182,15 +259,25 @@ function ProgramDetailModal({ isOpen, onClose, programId }: ProgramDetailModalPr
           >
             프로그램 소개
           </button>
-          <button 
+          <button
             onClick={() => setActiveTab('장소 안내')}
             className={`text-sm sm:text-base font-semibold pb-2 sm:pb-3 border-b-2 transition-colors ${
-              activeTab === '장소 안내' 
-                ? 'text-primary border-primary' 
+              activeTab === '장소 안내'
+                ? 'text-primary border-primary'
                 : 'text-gray-400 border-transparent hover:text-white'
             }`}
           >
             장소 안내
+          </button>
+          <button
+            onClick={() => setActiveTab('길찾기')}
+            className={`text-sm sm:text-base font-semibold pb-2 sm:pb-3 border-b-2 transition-colors ${
+              activeTab === '길찾기'
+                ? 'text-primary border-primary'
+                : 'text-gray-400 border-transparent hover:text-white'
+            }`}
+          >
+            길찾기
           </button>
         </div>
 
@@ -276,6 +363,47 @@ function ProgramDetailModal({ isOpen, onClose, programId }: ProgramDetailModalPr
                 </div>
               </div>
             </div>
+          </div>
+        ) : activeTab === '길찾기' ? (
+          <div className="mb-4" key="directions-tab">
+            {/* Directions Map */}
+            <div
+              ref={directionsMapRef}
+              key="directions-map"
+              className="w-full h-48 sm:h-64 bg-gray-800 rounded-lg mb-4 sm:mb-6 overflow-hidden"
+            />
+
+            {/* Legend */}
+            <div className="flex items-center gap-4 sm:gap-6 mb-4 sm:mb-6 px-2">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                <span className="text-xs sm:text-sm text-white">출발지 (내 위치)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
+                <span className="text-xs sm:text-sm text-white">도착지</span>
+              </div>
+            </div>
+
+            {/* Kakao Map Directions Button */}
+            <button
+              onClick={() => {
+                const geocoder = new window.kakao.maps.services.Geocoder()
+                geocoder.addressSearch(program.facilityAddress, (result, status) => {
+                  if (status === window.kakao.maps.services.Status.OK) {
+                    const destLat = result[0].y
+                    const destLng = result[0].x
+                    // 카카오맵 길찾기 URL (출발지 → 도착지)
+                    const kakaoMapUrl = `https://map.kakao.com/link/from/내 위치,${userLat},${userLng}/to/${encodeURIComponent(program.facility)},${destLat},${destLng}`
+                    window.open(kakaoMapUrl, '_blank')
+                  }
+                })
+              }}
+              className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-yellow-400 hover:bg-yellow-500 text-dark font-semibold rounded-full transition-colors"
+            >
+              <Route className="w-4 h-4" />
+              카카오맵에서 상세 경로 보기
+            </button>
           </div>
         ) : null}
 
