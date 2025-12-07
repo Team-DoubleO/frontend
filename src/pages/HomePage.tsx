@@ -96,7 +96,9 @@ function HomePage() {
             <span className="text-primary">FitFinder</span>는 이렇게 다릅니다
           </h2>
           <p className="text-gray-400 text-lg max-w-3xl mx-auto">
-            FitFinder는 몇 가지 간단한 질문을 통해 당신의 목표와 라이프스타일에 가장 적합한 운동 프로그램을 찾아드립니다.
+            FitFinder는 몇 가지 간단한 질문을 통해
+            <br />
+            당신의 목표와 라이프스타일에 가장 적합한 운동 프로그램을 찾아드립니다.
           </p>
         </div>
 
