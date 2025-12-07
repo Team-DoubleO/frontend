@@ -42,23 +42,24 @@ function HomePage() {
 
     return () => clearInterval(timer)
   }, [images.length])
-
   return (
     <div className="min-h-screen bg-dark">
       {/* Hero Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-        <div className="grid lg:grid-cols-2 gap-12 items-center mb-48">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-24">
+        <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 items-center mb-24 sm:mb-32 lg:mb-48">
           {/* Left Content */}
-          <div className="space-y-8">
-            <div className="space-y-4">
-              <h1 className="text-3xl lg:text-4xl font-bold text-white leading-tight">
+          <div className="space-y-6 sm:space-y-8">
+            <div className="space-y-3 sm:space-y-4">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white leading-tight">
                 당신에게 꼭 맞는 운동 프로그램,
-                <br />
+                <br className="hidden sm:block" />
+                <span className="sm:hidden"> </span>
                 지금 바로 FitFinder에서 찾아보세요
               </h1>
-              <p className="text-gray-400 text-lg leading-relaxed">
+              <p className="text-gray-400 text-base sm:text-lg leading-relaxed">
                 FitFinder는 몇 가지 간단한 설문을 통해 당신의 취향과
-                <br />
+                <span className="hidden sm:inline"><br /></span>
+                <span className="sm:hidden"> </span>
                 라이프스타일에 꼭 맞는 최적의 체육시설 프로그램을 추천해 드립니다.
               </p>
             </div>
@@ -67,6 +68,7 @@ function HomePage() {
               variant="primary" 
               size="large"
               onClick={() => navigate('/survey/step1')}
+              className="w-full sm:w-auto"
             >
               설문조사 시작하기
             </Button>
@@ -88,16 +90,15 @@ function HomePage() {
               ))}
             </div>
           </div>
-        </div>
-
-        {/* Features Section */}
-        <div className="text-center space-y-6 mb-20">
-          <h2 className="text-4xl lg:text-5xl font-bold text-white">
+        </div>        {/* Features Section */}
+        <div className="text-center space-y-4 sm:space-y-6 mb-12 sm:mb-20">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-white px-2">
             <span className="text-primary">FitFinder</span>는 이렇게 다릅니다
           </h2>
-          <p className="text-gray-400 text-lg max-w-3xl mx-auto">
+          <p className="text-gray-400 text-sm sm:text-base lg:text-lg max-w-3xl mx-auto px-4">
             FitFinder는 몇 가지 간단한 질문을 통해
-            <br />
+            <span className="hidden sm:inline"><br /></span>
+            <span className="sm:hidden"> </span>
             당신의 목표와 라이프스타일에 가장 적합한 운동 프로그램을 찾아드립니다.
           </p>
         </div>

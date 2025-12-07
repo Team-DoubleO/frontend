@@ -127,30 +127,30 @@ function ProgramListPage() {  const navigate = useNavigate()
       setSelectedTimes([])
     }
   }
-
   const handleProgramClick = (programId: number) => {
     setSelectedProgramId(programId)
     setIsDetailModalOpen(true)
   }
+  
   return (
     <div className="min-h-screen bg-dark">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-3 sm:gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-white mb-2">체육시설 프로그램 추천</h1>
-              <p className="text-gray-400">설문조사를 바탕으로 딱 맞는 체육시설 프로그램을 찾아왔어요.</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">체육시설 프로그램 추천</h1>
+              <p className="text-sm sm:text-base text-gray-400">설문조사를 바탕으로 딱 맞는 체육시설 프로그램을 찾아왔어요.</p>
             </div>            
             <Button
               variant="outline"
               size="medium"
               onClick={() => setIsAIRoutineModalOpen(true)}
-              className="flex items-center justify-center gap-2 whitespace-nowrap mt-2 relative overflow-hidden group animate-pulse hover:animate-none"
+              className="flex items-center justify-center gap-2 w-full lg:w-auto lg:whitespace-nowrap relative overflow-hidden group animate-pulse hover:animate-none text-sm sm:text-base"
             >
               {/* 반짝이는 배경 효과 */}
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/20 to-transparent animate-shimmer"></div>
-              <Sparkles className="w-5 h-5 text-primary animate-spin-slow" />
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-primary animate-spin-slow" />
               <span className="relative z-10">AI 운동 루틴 생성하기</span>
             </Button>
           </div>
@@ -158,7 +158,7 @@ function ProgramListPage() {  const navigate = useNavigate()
 
         {/* Filters */}
         <div className="space-y-4 mb-8">
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-2 sm:gap-3">
             {filters.map((filter) => {
               const Icon = filter.icon
               const hasAnyFilter = selectedDays.length > 0 || selectedTimes.length > 0
@@ -173,17 +173,16 @@ function ProgramListPage() {  const navigate = useNavigate()
               } else {
                 isActive = selectedFilter === filter.label
               }
-              
-              return (
+                return (
                 <Button
                   key={filter.label}
                   variant={isActive ? 'primary' : 'outline'}
                   size="medium"
                   onClick={() => handleFilterClick(filter.label)}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base px-3 sm:px-4"
                 >
-                  <Icon className="w-4 h-4" />
-                  {filter.label}
+                  <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <span>{filter.label}</span>
                 </Button>
               )
             })}
@@ -244,35 +243,34 @@ function ProgramListPage() {  const navigate = useNavigate()
             <p className="text-gray-400 text-lg">조건에 맞는 프로그램이 없습니다.</p>
           </div>
         ) : (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+          <>            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-8">
               {programs.map((program) => (
                 <div
                   key={program.programId}
                   onClick={() => handleProgramClick(program.programId)}
-                  className="bg-gray-800/50 border border-gray-700 rounded-lg p-5 hover:border-primary/50 transition-all cursor-pointer"
+                  className="bg-gray-800/50 border border-gray-700 rounded-lg p-4 sm:p-5 hover:border-primary/50 transition-all cursor-pointer"
                 >
                   {/* Category Badge */}
-                  <div className="inline-block bg-primary/80 text-dark text-sm font-semibold px-3 py-1 rounded-full mb-2">
+                  <div className="inline-block bg-primary/80 text-dark text-xs sm:text-sm font-semibold px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full mb-2">
                     {program.subCategory}
                   </div>
 
                   {/* Title */}
-                  <h3 className="text-white text-xl font-bold mb-3">{program.programName}</h3>
+                  <h3 className="text-white text-base sm:text-lg lg:text-xl font-bold mb-2 sm:mb-3 line-clamp-2">{program.programName}</h3>
 
                   {/* Details */}
-                  <div className="space-y-2">
+                  <div className="space-y-1.5 sm:space-y-2">
                     <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4 flex-shrink-0 text-primary" />
-                      <span className='text-white'><span className="font-bold">요일</span> {program.weekday.join(', ')}</span>
+                      <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 text-primary" />
+                      <span className='text-white text-xs sm:text-sm'><span className="font-bold">요일</span> {program.weekday.join(', ')}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4 flex-shrink-0 text-primary" />
-                      <span className='text-white'><span className="font-bold">시간</span> {program.startTime}</span>
+                      <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 text-primary" />
+                      <span className='text-white text-xs sm:text-sm'><span className="font-bold">시간</span> {program.startTime}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4 flex-shrink-0 text-primary" />
-                      <span className='text-white'><span className="font-bold">장소</span> {program.facility}</span>
+                      <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 text-primary" />
+                      <span className='text-white text-xs sm:text-sm truncate'><span className="font-bold">장소</span> {program.facility}</span>
                     </div>
                   </div>
                 </div>
@@ -289,14 +287,13 @@ function ProgramListPage() {  const navigate = useNavigate()
             </div>
           </>
         )}
-      </div>      
-      {/* Fixed Bottom Button */}
-      <div className="fixed bottom-14 left-1/2 transform -translate-x-1/2 z-40">
+      </div>        {/* Fixed Bottom Button */}
+      <div className="fixed bottom-14 sm:bottom-16 left-1/2 transform -translate-x-1/2 z-40 px-4 w-full max-w-xs sm:max-w-sm">
         <Button
           variant="outline"
           size="medium"
           onClick={() => navigate('/')}
-          className='bg-dark'
+          className='bg-dark w-full text-sm sm:text-base'
         >
           처음으로 돌아가기
         </Button>

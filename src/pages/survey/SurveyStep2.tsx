@@ -30,30 +30,27 @@ function SurveyStep2() {
       navigate('/survey/step3')
     }
   }
-
   return (
     <div className="min-h-screen bg-dark py-4">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <ProgressBar currentStep={2} totalSteps={4} />
 
         {/* Question */}
-        <div className="space-y-8">
+        <div className="space-y-6 sm:space-y-8">
           <div className="space-y-2">
-            <h1 className="text-3xl font-bold text-white">연령대를 선택해 주세요</h1>
-            <p className="text-gray-400">연령대에 맞는 최적의 체육시설 프로그램을 추천해 드립니다.</p>
-          </div>
-
-          {/* Options */}
-          <div className="grid grid-cols-3 gap-4">
+            <h1 className="text-2xl sm:text-3xl font-bold text-white">연령대를 선택해 주세요</h1>
+            <p className="text-sm sm:text-base text-gray-400">연령대에 맞는 최적의 체육시설 프로그램을 추천해 드립니다.</p>
+          </div>          {/* Options */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
             {ageGroups.map((age) => (
               <button
                 key={age}
                 onClick={() => setSelectedAge(age)}
-                className={`py-6 px-4 rounded-lg border-2 transition-all ${
+                className={`py-4 sm:py-5 lg:py-6 px-3 sm:px-4 rounded-lg border-2 transition-all ${
                   selectedAge === age
                     ? 'border-primary bg-primary/10 text-white'
                     : 'border-gray-700 hover:border-gray-600 text-gray-300'
-                } text-lg font-semibold`}
+                } text-sm sm:text-base lg:text-lg font-semibold`}
               >
                 {age}
               </button>
@@ -61,7 +58,7 @@ function SurveyStep2() {
           </div>
 
           {/* Navigation */}
-          <div className="flex justify-between pt-8">
+          <div className="flex justify-between pt-6 sm:pt-8">
             <Button
               variant="outline"
               size="medium"
