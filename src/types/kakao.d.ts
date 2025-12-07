@@ -34,10 +34,10 @@ declare global {
           yAnchor?: number
         }) => kakao.maps.CustomOverlay
 
-        load: (callback: () => void) => void
-
+        load: (callback: () => void) => void        
         services: {
           Geocoder: new () => kakao.maps.services.Geocoder
+          Places: new () => kakao.maps.services.Places
           Status: {
             OK: string
             ZERO_RESULT: string
@@ -129,9 +129,7 @@ declare global {
           region_2depth_name: string
           region_3depth_name: string
         } | null
-      }
-
-      interface Coord2AddressResult {
+      }      interface Coord2AddressResult {
         address: {
           address_name: string
           region_1depth_name: string
@@ -144,6 +142,25 @@ declare global {
           region_2depth_name: string
           region_3depth_name: string
         } | null
+      }
+
+      interface Places {
+        keywordSearch(
+          keyword: string,
+          callback: (result: PlaceSearchResult[], status: string) => void
+        ): void
+      }
+
+      interface PlaceSearchResult {
+        place_name: string
+        address_name: string
+        road_address_name: string
+        x: string
+        y: string
+        id: string
+        category_name: string
+        phone: string
+        place_url: string
       }
     }
 

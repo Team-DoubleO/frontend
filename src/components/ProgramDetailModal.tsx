@@ -79,33 +79,72 @@ function ProgramDetailModal({ isOpen, onClose, programId }: ProgramDetailModalPr
 
     loadProgramDetail()
   }, [isOpen, programId])
-  
+
+  // 장소 안내 탭 지도 초기화
   useEffect(() => {
     if (!isOpen || activeTab !== '장소 안내' || !program?.facilityAddress) return
 
     const initMap = () => {
       if (!window.kakao || !window.kakao.maps || !mapRef.current) return
 
-      // Geocoder로 주소를 좌표로 변환
       const geocoder = new window.kakao.maps.services.Geocoder()
+      const places = new window.kakao.maps.services.Places()
       
+      const createMap = (lat: string, lng: string) => {
+        const coords = new window.kakao.maps.LatLng(parseFloat(lat), parseFloat(lng))
+        
+        const options = {
+          center: coords,
+          level: 4
+        }
+
+        const map = new window.kakao.maps.Map(mapRef.current!, options)
+
+        new window.kakao.maps.Marker({
+          position: coords,
+          map: map
+        })
+      }
+      // 1단계: 주소로 검색
       geocoder.addressSearch(program.facilityAddress, (result, status) => {
         if (status === window.kakao.maps.services.Status.OK) {
-          const coords = new window.kakao.maps.LatLng(parseFloat(result[0].y), parseFloat(result[0].x))
-          
-          const options = {
-            center: coords,
-            level: 4
-          }
-
-          const map = new window.kakao.maps.Map(mapRef.current!, options)
-
-          new window.kakao.maps.Marker({
-            position: coords,
-            map: map
-          })
+          createMap(result[0].y, result[0].x)
+          console.log('주소 검색 성공:', program.facilityAddress)
         } else {
-          console.error('주소 검색 실패:', program.facilityAddress)
+          // 2단계: 장소명으로 검색
+          console.warn('주소 검색 실패, 장소명으로 재검색:', program.facility)
+          
+          places.keywordSearch(program.facility, (placeResult, placeStatus) => {
+            if (placeStatus === window.kakao.maps.services.Status.OK && placeResult.length > 0) {
+              // 가장 유사도가 높은 첫 번째 결과 사용
+              createMap(placeResult[0].y, placeResult[0].x)
+              console.log('장소명 검색 성공:', placeResult[0].place_name, '(주소:', placeResult[0].address_name, ')')
+            } else {
+              // 3단계: 단순화된 장소명으로 검색 (괄호 제거, 세부 시설명 제거)
+              console.warn('장소명 검색 실패, 단순화된 장소명으로 재검색')
+              
+              const simplifiedFacility = program.facility
+                .replace(/\(.*?\)/g, '') // 괄호와 그 안의 내용 제거: "센터(수영장)" → "센터"
+                .replace(/\[.*?\]/g, '') // 대괄호와 그 안의 내용 제거
+                .replace(/\s+(수영장|헬스장|체육관|강당|운동장|축구장|농구장|배드민턴장|탁구장)$/g, '') // 끝에 있는 세부 시설명 제거
+                .trim()
+              
+              if (simplifiedFacility && simplifiedFacility !== program.facility) {
+                console.log('단순화된 장소명:', simplifiedFacility)
+                
+                places.keywordSearch(simplifiedFacility, (simplifiedResult, simplifiedStatus) => {
+                  if (simplifiedStatus === window.kakao.maps.services.Status.OK && simplifiedResult.length > 0) {
+                    createMap(simplifiedResult[0].y, simplifiedResult[0].x)
+                    console.log('단순화 장소명 검색 성공:', simplifiedResult[0].place_name, '(주소:', simplifiedResult[0].address_name, ')')
+                  } else {
+                    console.error('모든 검색 방법 실패:', program.facilityAddress, program.facility, simplifiedFacility)
+                  }
+                })
+              } else {
+                console.error('주소 및 장소명 검색 모두 실패:', program.facilityAddress, program.facility)
+              }
+            }
+          })
         }
       })
     }
@@ -122,7 +161,6 @@ function ProgramDetailModal({ isOpen, onClose, programId }: ProgramDetailModalPr
       document.head.appendChild(script)
     }
   }, [isOpen, activeTab, program])
-
   // 길찾기 탭 지도 초기화
   useEffect(() => {
     if (!isOpen || activeTab !== '길찾기' || !program?.facilityAddress || !userLat || !userLng) return
@@ -131,55 +169,100 @@ function ProgramDetailModal({ isOpen, onClose, programId }: ProgramDetailModalPr
       if (!window.kakao || !window.kakao.maps || !directionsMapRef.current) return
 
       const geocoder = new window.kakao.maps.services.Geocoder()
+      const places = new window.kakao.maps.services.Places()
 
+      const drawMap = (destLat: number, destLng: number) => {
+        const destCoords = new window.kakao.maps.LatLng(destLat, destLng)
+        const originCoords = new window.kakao.maps.LatLng(userLat, userLng)
+
+        // 두 점의 중심 계산
+        const centerLat = (userLat + destLat) / 2
+        const centerLng = (userLng + destLng) / 2
+        const centerCoords = new window.kakao.maps.LatLng(centerLat, centerLng)
+
+        const options = {
+          center: centerCoords,
+          level: 7
+        }
+
+        const map = new window.kakao.maps.Map(directionsMapRef.current!, options)
+
+        // 출발지 마커 (파란색)
+        const originMarkerImage = new window.kakao.maps.MarkerImage(
+          'https://t1.daumcdn.net/localimg/localimages/07/2018/pc/img/marker_spot.png',
+          new window.kakao.maps.Size(33, 44)
+        )
+        new window.kakao.maps.Marker({
+          position: originCoords,
+          map: map,
+          image: originMarkerImage,
+          title: '출발지'
+        })
+
+        // 도착지 마커 (노란색)
+        const destMarkerImage = new window.kakao.maps.MarkerImage(
+          'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png',
+          new window.kakao.maps.Size(24, 35)
+        )
+        new window.kakao.maps.Marker({
+          position: destCoords,
+          map: map,
+          image: destMarkerImage,
+          title: '도착지'
+        })
+
+        // 두 마커가 모두 보이도록 bounds 설정
+        const bounds = new window.kakao.maps.LatLngBounds()
+        bounds.extend(originCoords)
+        bounds.extend(destCoords)
+        map.setBounds(bounds)
+      }      
+      // 1단계: 주소로 검색
       geocoder.addressSearch(program.facilityAddress, (result, status) => {
         if (status === window.kakao.maps.services.Status.OK) {
           const destLat = parseFloat(result[0].y)
           const destLng = parseFloat(result[0].x)
-          const destCoords = new window.kakao.maps.LatLng(destLat, destLng)
-          const originCoords = new window.kakao.maps.LatLng(userLat, userLng)
-
-          // 두 점의 중심 계산
-          const centerLat = (userLat + destLat) / 2
-          const centerLng = (userLng + destLng) / 2
-          const centerCoords = new window.kakao.maps.LatLng(centerLat, centerLng)
-
-          const options = {
-            center: centerCoords,
-            level: 7
-          }
-
-          const map = new window.kakao.maps.Map(directionsMapRef.current!, options)
-
-          // 출발지 마커 (파란색)
-          const originMarkerImage = new window.kakao.maps.MarkerImage(
-            'https://t1.daumcdn.net/localimg/localimages/07/2018/pc/img/marker_spot.png',
-            new window.kakao.maps.Size(33, 44)
-          )
-          new window.kakao.maps.Marker({
-            position: originCoords,
-            map: map,
-            image: originMarkerImage,
-            title: '출발지'
+          drawMap(destLat, destLng)
+          console.log('주소 검색 성공:', program.facilityAddress)
+        } else {
+          // 2단계: 장소명으로 검색
+          console.warn('주소 검색 실패, 장소명으로 재검색:', program.facility)
+          
+          places.keywordSearch(program.facility, (placeResult, placeStatus) => {
+            if (placeStatus === window.kakao.maps.services.Status.OK && placeResult.length > 0) {
+              // 가장 유사도가 높은 첫 번째 결과 사용
+              const destLat = parseFloat(placeResult[0].y)
+              const destLng = parseFloat(placeResult[0].x)
+              drawMap(destLat, destLng)
+              console.log('장소명 검색 성공:', placeResult[0].place_name, '(주소:', placeResult[0].address_name, ')')
+            } else {
+              // 3단계: 단순화된 장소명으로 검색 (괄호 제거, 세부 시설명 제거)
+              console.warn('장소명 검색 실패, 단순화된 장소명으로 재검색')
+              
+              const simplifiedFacility = program.facility
+                .replace(/\(.*?\)/g, '') // 괄호와 그 안의 내용 제거
+                .replace(/\[.*?\]/g, '') // 대괄호와 그 안의 내용 제거
+                .replace(/\s+(수영장|헬스장|체육관|강당|운동장|축구장|농구장|배드민턴장|탁구장)$/g, '') // 끝에 있는 세부 시설명 제거
+                .trim()
+              
+              if (simplifiedFacility && simplifiedFacility !== program.facility) {
+                console.log('단순화된 장소명:', simplifiedFacility)
+                
+                places.keywordSearch(simplifiedFacility, (simplifiedResult, simplifiedStatus) => {
+                  if (simplifiedStatus === window.kakao.maps.services.Status.OK && simplifiedResult.length > 0) {
+                    const destLat = parseFloat(simplifiedResult[0].y)
+                    const destLng = parseFloat(simplifiedResult[0].x)
+                    drawMap(destLat, destLng)
+                    console.log('단순화 장소명 검색 성공:', simplifiedResult[0].place_name, '(주소:', simplifiedResult[0].address_name, ')')
+                  } else {
+                    console.error('모든 검색 방법 실패:', program.facilityAddress, program.facility, simplifiedFacility)
+                  }
+                })
+              } else {
+                console.error('주소 및 장소명 검색 모두 실패:', program.facilityAddress, program.facility)
+              }
+            }
           })
-
-          // 도착지 마커 (노란색)
-          const destMarkerImage = new window.kakao.maps.MarkerImage(
-            'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png',
-            new window.kakao.maps.Size(24, 35)
-          )
-          new window.kakao.maps.Marker({
-            position: destCoords,
-            map: map,
-            image: destMarkerImage,
-            title: '도착지'
-          })
-
-          // 두 마커가 모두 보이도록 bounds 설정
-          const bounds = new window.kakao.maps.LatLngBounds()
-          bounds.extend(originCoords)
-          bounds.extend(destCoords)
-          map.setBounds(bounds)
         }
       })
     }
@@ -382,19 +465,47 @@ function ProgramDetailModal({ isOpen, onClose, programId }: ProgramDetailModalPr
                 <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
                 <span className="text-xs sm:text-sm text-white">도착지</span>
               </div>
-            </div>
-
-            {/* Kakao Map Directions Button */}
+            </div>            {/* Kakao Map Directions Button */}
             <button
               onClick={() => {
                 const geocoder = new window.kakao.maps.services.Geocoder()
+                const places = new window.kakao.maps.services.Places()
+                
+                const openKakaoMap = (destLat: string, destLng: string) => {
+                  const kakaoMapUrl = `https://map.kakao.com/link/from/내 위치,${userLat},${userLng}/to/${encodeURIComponent(program.facility)},${destLat},${destLng}`
+                  window.open(kakaoMapUrl, '_blank')
+                }
+                // 1단계: 주소로 검색
                 geocoder.addressSearch(program.facilityAddress, (result, status) => {
                   if (status === window.kakao.maps.services.Status.OK) {
-                    const destLat = result[0].y
-                    const destLng = result[0].x
-                    // 카카오맵 길찾기 URL (출발지 → 도착지)
-                    const kakaoMapUrl = `https://map.kakao.com/link/from/내 위치,${userLat},${userLng}/to/${encodeURIComponent(program.facility)},${destLat},${destLng}`
-                    window.open(kakaoMapUrl, '_blank')
+                    openKakaoMap(result[0].y, result[0].x)
+                  } else {
+                    // 2단계: 장소명으로 검색
+                    places.keywordSearch(program.facility, (placeResult, placeStatus) => {
+                      if (placeStatus === window.kakao.maps.services.Status.OK && placeResult.length > 0) {
+                        // 가장 유사도가 높은 첫 번째 결과 사용
+                        openKakaoMap(placeResult[0].y, placeResult[0].x)
+                      } else {
+                        // 3단계: 단순화된 장소명으로 검색
+                        const simplifiedFacility = program.facility
+                          .replace(/\(.*?\)/g, '')
+                          .replace(/\[.*?\]/g, '')
+                          .replace(/\s+(수영장|헬스장|체육관|강당|운동장|축구장|농구장|배드민턴장|탁구장)$/g, '')
+                          .trim()
+                        
+                        if (simplifiedFacility && simplifiedFacility !== program.facility) {
+                          places.keywordSearch(simplifiedFacility, (simplifiedResult, simplifiedStatus) => {
+                            if (simplifiedStatus === window.kakao.maps.services.Status.OK && simplifiedResult.length > 0) {
+                              openKakaoMap(simplifiedResult[0].y, simplifiedResult[0].x)
+                            } else {
+                              alert('길찾기 정보를 찾을 수 없습니다.')
+                            }
+                          })
+                        } else {
+                          alert('길찾기 정보를 찾을 수 없습니다.')
+                        }
+                      }
+                    })
                   }
                 })
               }}
