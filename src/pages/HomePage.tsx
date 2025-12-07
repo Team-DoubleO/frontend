@@ -128,9 +128,7 @@ function HomePage() {
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-gray-500 text-sm">© 2025 FitFinder Inc. All rights reserved.</p>
             <div className="flex gap-6 text-sm text-gray-500">
-              <button className="transition-colors">이용약관</button>
-              <button className="transition-colors">개인정보처리방침</button>
-              <button className="transition-colors">고객센터</button>
+              <button className="transition-colors">Team-DoubleO</button>
             </div>
           </div>
         </div>

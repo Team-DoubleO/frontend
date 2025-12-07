@@ -52,7 +52,7 @@ function ProgramDetailModal({ isOpen, onClose, programId }: ProgramDetailModalPr
         const transformedTransportData = apiData.transportData.map((item: { transportType: string; transportName: string; transportTime: number }) => ({
           transportType: item.transportType,
           transportName: item.transportName,
-          transportTime: `도보 ${item.transportTime}분`
+          transportTime: `${item.transportType} ${item.transportTime}분`
         }))
         
         setProgram({
@@ -353,7 +353,6 @@ function ProgramDetailModal({ isOpen, onClose, programId }: ProgramDetailModalPr
                       const IconComponent = transport.transportType === '버스' ? BusFront : TrainFront
                       return (
                         <li key={index} className="flex items-center text-xs sm:text-sm text-white">
-                          <span className="font-bold mr-2">{transport.transportType}</span>
                           <IconComponent className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white flex-shrink-0 mr-1" />
                           <span>{transport.transportName} ({transport.transportTime})</span>
                         </li>
