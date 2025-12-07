@@ -14,7 +14,7 @@ function SurveyStep2() {
   ]
 
   const mapAgeToBackend = (age: string): string => {
-    if (age === '영유아') return '영유아'
+    if (age === '영유아') return '유아'
     if (['초등학생', '중학생', '고등학생'].includes(age)) return '청소년'
     if (['성인', '시니어'].includes(age)) return '성인'
     return age

@@ -54,7 +54,7 @@ function AIRoutineModal({ isOpen, onClose }: AIRoutineModalProps) {
 
     try {
       const response = await generateAIRoutine({
-        gender: gender === '남성' ? 'M' : 'F',
+        gender: gender === '남성' ? '남성' : '여성',
         age,
         latitude: 37.5665,
         longitude: 126.9780,
