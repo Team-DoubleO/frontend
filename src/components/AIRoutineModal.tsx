@@ -54,7 +54,7 @@ function AIRoutineModal({ isOpen, onClose }: AIRoutineModalProps) {
 
     try {
       const response = await generateAIRoutine({
-        gender: gender === 'MALE' ? '남성' : '여성',
+        gender,
         age,
         latitude: 37.5665,
         longitude: 126.9780,
@@ -392,7 +392,7 @@ function AIRoutineModal({ isOpen, onClose }: AIRoutineModalProps) {
               <div className="grid grid-cols-2 gap-4 sm:gap-6">
                 <div>
                   <div className="text-gray-400 text-xs sm:text-sm mb-1 sm:mb-2">성별</div>
-                  <div className="text-white text-sm sm:text-base">{gender === 'MALE' ? '남성' : '여성'}</div>
+                  <div className="text-white text-sm sm:text-base">{gender}</div>
                 </div>
                 <div>
                   <div className="text-gray-400 text-xs sm:text-sm mb-1 sm:mb-2">연령대</div>
