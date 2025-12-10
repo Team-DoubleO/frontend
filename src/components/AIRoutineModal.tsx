@@ -306,7 +306,7 @@ function AIRoutineModal({ isOpen, onClose }: AIRoutineModalProps) {
                           <div className="flex flex-wrap gap-1.5">
                             <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 ${colors.tagBg} border ${colors.tagBorder2} rounded-lg ${colors.tagText} text-xs`}>
                               <Footprints className="w-3 h-3" />
-                              <span>{item.distanceWalk}</span>
+                              <span>반경 {item.distanceWalk}km</span>
                             </span>
                             <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 ${colors.tagBg} border ${colors.tagBorder2} rounded-lg ${colors.tagText} text-xs`}>
                               <Tag className="w-3 h-3" />
