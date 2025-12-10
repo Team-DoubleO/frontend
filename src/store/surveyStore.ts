@@ -35,6 +35,7 @@ interface SurveyState {
     weekday?: string[]
     startTime?: string[]
   }
+  isValidSurveyData: () => boolean
 }
 
 export const useSurveyStore = create<SurveyState>((set, get) => ({
@@ -84,5 +85,17 @@ export const useSurveyStore = create<SurveyState>((set, get) => ({
     favorites: get().favorites,
     ...(get().weekday && { weekday: get().weekday }),
     ...(get().startTime && { startTime: get().startTime })
-  })
+  }),
+
+  // 설문조사 필수 값 검증
+  isValidSurveyData: () => {
+    const state = get()
+    return !!(
+      state.gender && 
+      state.age && 
+      state.latitude !== 0 && 
+      state.longitude !== 0 && 
+      state.favorites.length > 0
+    )
+  }
 }))

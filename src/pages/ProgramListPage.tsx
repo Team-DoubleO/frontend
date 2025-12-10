@@ -21,7 +21,7 @@ interface Program {
 }
 
 function ProgramListPage() {  const navigate = useNavigate()
-  const { weekday, startTime, setWeekday, setStartTime, getProgramRequest } = useSurveyStore()
+  const { weekday, startTime, setWeekday, setStartTime, getProgramRequest, isValidSurveyData } = useSurveyStore()
   const [selectedFilter, setSelectedFilter] = useState<string>('전체')
   const [isDayModalOpen, setIsDayModalOpen] = useState(false)
   const [isTimeModalOpen, setIsTimeModalOpen] = useState(false)
@@ -34,6 +34,7 @@ function ProgramListPage() {  const navigate = useNavigate()
   const [programs, setPrograms] = useState<Program[]>([])
   const [hasMore, setHasMore] = useState(true)
   const [isFetchingMore, setIsFetchingMore] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string>('')
   const observerTarget = useRef<HTMLDivElement>(null)
 
   const filters = [
@@ -41,13 +42,22 @@ function ProgramListPage() {  const navigate = useNavigate()
     { label: '요일', icon: Calendar },
     { label: '시간대', icon: Clock }
   ]
-
   // 초기 프로그램 로딩 및 필터 변경 시 재요청
   const loadPrograms = useCallback(async (reset = false) => {
+    // 설문조사 검증
+    if (!isValidSurveyData()) {
+      setErrorMessage('설문조사를 완료해주세요. 성별, 연령대, 위치, 관심 운동 종목을 모두 입력해야 합니다.')
+      setIsLoading(false)
+      setIsFetchingMore(false)
+      setHasMore(false)
+      return
+    }
+
     if (reset) {
       setIsLoading(true)
       setPrograms([])
       setHasMore(true)
+      setErrorMessage('')
     } else if (!hasMore || isFetchingMore) {
       return
     } else {
@@ -77,14 +87,31 @@ function ProgramListPage() {  const navigate = useNavigate()
       } else {
         setPrograms(prev => reset ? response.data : [...prev, ...response.data])
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('프로그램 로딩 실패:', error)
+      
+      // 백엔드 에러 메시지 처리
+      if (error.response?.data?.message) {
+        setErrorMessage(error.response.data.message)
+      } else if (error.response?.status === 400) {
+        setErrorMessage('설문조사 데이터가 올바르지 않습니다. 처음부터 다시 시작해주세요.')
+      } else {
+        setErrorMessage('프로그램을 불러오는데 실패했습니다. 잠시 후 다시 시도해주세요.')
+      }
       setHasMore(false)
     } finally {
       setIsLoading(false)
       setIsFetchingMore(false)
     }
-  }, [selectedDays, selectedTimes, programs, hasMore, isFetchingMore, setWeekday, setStartTime, getProgramRequest])
+  }, [selectedDays, selectedTimes, programs, hasMore, isFetchingMore, setWeekday, setStartTime, getProgramRequest, isValidSurveyData])
+  // 초기 마운트 시 설문조사 검증
+  useEffect(() => {
+    if (!isValidSurveyData()) {
+      setErrorMessage('설문조사를 완료해주세요. 성별, 연령대, 위치, 관심 운동 종목을 모두 입력해야 합니다.')
+      setPrograms([])
+      setHasMore(false)
+    }
+  }, [isValidSurveyData])
 
   // 필터 변경 시 초기화하고 새로 로드
   useEffect(() => {
@@ -227,7 +254,27 @@ function ProgramListPage() {  const navigate = useNavigate()
         <AIRoutineModal
           isOpen={isAIRoutineModalOpen}
           onClose={() => setIsAIRoutineModalOpen(false)}
-        />
+        />        
+        {/* Error Message */}
+        {errorMessage && (
+          <div className="mb-6 p-4 bg-red-900/20 border border-red-500/50 rounded-xl">
+            <div className="flex items-start gap-2">
+              <svg className="w-5 h-5 text-red-500 flex-shrink-0 mt-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div className="flex-1">
+                <p className="text-white leading-relaxed">{errorMessage}</p>
+                <Button
+                  variant="outline"
+                  onClick={() => navigate('/survey/step1')}
+                  className="mt-3 border-red-500/50 text-red-300 hover:bg-red-900/30"
+                >
+                  설문조사 다시하기
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Programs Grid */}
         {isLoading && programs.length === 0 ? (
@@ -238,7 +285,7 @@ function ProgramListPage() {  const navigate = useNavigate()
             </div>
             <p className="text-gray-400 text-lg">프로그램을 불러오는 중...</p>
           </div>
-        ) : programs.length === 0 ? (
+        ) : programs.length === 0 && !errorMessage ? (
           <div className="flex flex-col items-center justify-center py-20">
             <p className="text-gray-400 text-lg">조건에 맞는 프로그램이 없습니다.</p>
           </div>
