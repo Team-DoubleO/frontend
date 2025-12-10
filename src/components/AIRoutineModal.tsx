@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { X, Sparkles, Edit, User, MapPin, Calendar, Target, List, Footprints, Tag } from 'lucide-react'
+import { X, Sparkles, Edit, User, MapPin, Calendar, Target, List, Tag, TargetIcon } from 'lucide-react'
 import { useSurveyStore } from '../store/surveyStore'
 import Button from './Button'
 import { generateAIRoutine } from '../services/api'
@@ -305,8 +305,8 @@ function AIRoutineModal({ isOpen, onClose }: AIRoutineModalProps) {
                           {/* Tags */}
                           <div className="flex flex-wrap gap-1.5">
                             <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 ${colors.tagBg} border ${colors.tagBorder2} rounded-lg ${colors.tagText} text-xs`}>
-                              <Footprints className="w-3 h-3" />
-                              <span>{item.distanceWalk}</span>
+                              <TargetIcon className="w-3 h-3" />
+                              <span>반경 {item.distanceWalk}km</span>
                             </span>
                             <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 ${colors.tagBg} border ${colors.tagBorder2} rounded-lg ${colors.tagText} text-xs`}>
                               <Tag className="w-3 h-3" />
